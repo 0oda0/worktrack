@@ -8,6 +8,10 @@ export const checkOut = (lat: number, lng: number) => {
   return instance.post('/attendance/check-out', { lat, lng });
 };
 
-export const fetchTimesheet = (params: { start: string; end: string }) => {
+export const getTimesheet = (params: { start: string; end: string }) => {
   return instance.get('/attendance/timesheet', { params });
+};
+
+export const getTimesheetForUser = (userId: number, params: { start: string; end: string }) => {
+  return instance.get(`/attendance/timesheet/${userId}`, { params });
 };

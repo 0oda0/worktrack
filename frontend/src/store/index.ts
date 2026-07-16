@@ -7,7 +7,7 @@ import ratingReducer from './slices/ratingSlice';
 
 export const store = configureStore({
   reducer: {
-    user: userReducer,
+    users: userReducer,
     attendance: attendanceReducer,
     requests: requestReducer,
     holidays: holidayReducer,

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useGeolocated } from '../hooks/useGeolocation';
+import { useDispatch } from 'react-redux';
 import { checkIn, checkOut } from '../api/attendanceApi';
 
-const CheckIn = () => {
+const CheckInPage: React.FC = () => {
   const { coords, getPosition } = useGeolocated();
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
 
   const handleCheckIn = async () => {
@@ -41,4 +43,4 @@ const CheckIn = () => {
   );
 };
 
-export default CheckIn;
+export default CheckInPage;

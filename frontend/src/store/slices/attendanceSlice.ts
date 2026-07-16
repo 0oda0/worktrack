@@ -1,28 +1,31 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchTimesheet } from '../../api/attendanceApi';
+import { getTimesheet } from '../../api/attendanceApi';
 
-export const fetchTimesheetData = createAsyncThunk(
+export const fetchTimesheet = createAsyncThunk(
   'attendance/fetchTimesheet',
   async (params: { start: string; end: string }) => {
-    const res = await fetchTimesheet(params);
+    const res = await getTimesheet(params);
     return res.data;
   }
 );
 
+const initialState = { stats: {}, days: [], loading: false };
+
 const attendanceSlice = createSlice({
   name: 'attendance',
-  initialState: { stats: {}, days: [], loading: false },
+  initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchTimesheetData.pending, (state) => { state.loading = true; })
-      .addCase(fetchTimesheetData.fulfilled, (state, action) => {
+      .addCase(fetchTimesheet.pending, (state) => { state.loading = true; })
+      .addCase(fetchTimesheet.fulfilled, (state, action) => {
+        state.loading = false;
         state.stats = action.payload.stats;
         state.days = action.payload.days;
-        state.loading = false;
       })
-      .addCase(fetchTimesheetData.rejected, (state) => { state.loading = false; });
+      .addCase(fetchTimesheet.rejected, (state) => { state.loading = false; });
   },
 });
 
+export const selectTimesheet = (state: any) => state.attendance;
 export default attendanceSlice.reducer;
