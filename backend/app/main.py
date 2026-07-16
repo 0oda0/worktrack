@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.database import SessionLocal
-from app.routers import admin, attendance, auth, holidays, requests
+from app.routers import admin, attendance, auth, holidays, reports, requests
 from app.seed import seed
 
 
@@ -21,6 +21,7 @@ app.include_router(admin.router)
 app.include_router(attendance.router)
 app.include_router(holidays.router)
 app.include_router(requests.router)
+app.include_router(reports.router)
 
 
 @app.get("/api/health")

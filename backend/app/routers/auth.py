@@ -30,6 +30,8 @@ def login(data: LoginIn, db: Session = Depends(get_db)):
     user = db.scalar(select(User).where(User.email == data.email))
     if not user or not verify_password(data.password, user.password_hash):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid credentials")
+    if not user.is_active:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Аккаунт деактивирован")
     return TokenOut(token=create_token(user), user=UserOut.model_validate(user))
 
 

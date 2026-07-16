@@ -24,6 +24,7 @@ class UserOut(BaseModel):
     audience: str | None
     hire_date: date | None
     is_approved: bool
+    is_active: bool
 
     model_config = {"from_attributes": True}
 
@@ -124,3 +125,72 @@ class ApproveIn(BaseModel):
             return
         if self.audience not in AUDIENCES:
             raise ValueError(f"audience must be one of {AUDIENCES}")
+
+
+class UserUpdateIn(BaseModel):
+    full_name: str | None = Field(default=None, min_length=1, max_length=200)
+    role: str | None = Field(default=None, pattern="^(" + "|".join(ROLES) + ")$")
+    audience: str | None = None
+    hire_date: date | None = None
+    is_approved: bool | None = None
+    is_active: bool | None = None
+
+
+class RecordUpdateIn(BaseModel):
+    check_in: datetime | None = None
+    check_out: datetime | None = None
+    comment: str | None = Field(default=None, max_length=1000)
+
+
+class AdminRecordOut(BaseModel):
+    id: int
+    user_id: int
+    full_name: str
+    audience: str | None
+    work_date: date
+    check_in: datetime
+    check_out: datetime | None
+    lat_in: float | None
+    lng_in: float | None
+    lat_out: float | None
+    lng_out: float | None
+    out_of_zone_in: bool
+    out_of_zone_out: bool
+    is_manual: bool
+    comment: str
+
+
+class NowWorkingOut(BaseModel):
+    user_id: int
+    full_name: str
+    audience: str | None
+    check_in: datetime
+    out_of_zone_in: bool
+
+
+class SummaryRowOut(StatsOut):
+    user_id: int
+    full_name: str
+    audience: str | None
+    hire_date: date | None
+
+
+class RatingRowOut(BaseModel):
+    user_id: int
+    full_name: str
+    audience: str | None
+    total_hours: float
+    overtime: float
+    weekend_hours: float
+    lateness: int
+    score: float
+
+
+class SettingsIn(BaseModel):
+    office_lat: float = Field(ge=-90, le=90)
+    office_lng: float = Field(ge=-180, le=180)
+    office_radius_m: float = Field(gt=0)
+
+
+class SettingsOut(SettingsIn):
+    pass
