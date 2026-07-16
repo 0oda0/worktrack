@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     jwt_secret: str = "dev-secret"
     app_tz: str = "Europe/Moscow"
 
-    admin_email: str = "admin@worktrack.local"
+    admin_email: str = "admin@worktrack.ru"
     admin_password: str = "admin"
 
     office_lat: float = 55.7558

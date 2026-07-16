@@ -1,13 +1,9 @@
-import bcrypt
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.auth import hash_password
 from app.config import settings
 from app.models import ROLE_ADMIN, Setting, User
-
-
-def hash_password(password: str) -> str:
-    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
 
 def seed(db: Session) -> None:
