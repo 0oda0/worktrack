@@ -124,12 +124,10 @@ def list_records(
     start: date | None = None,
     end: date | None = None,
     db: Session = Depends(get_db),
-    current: User = Depends(require_roles(ROLE_ADMIN, ROLE_LEADER)),
+    _: User = Depends(require_roles(ROLE_ADMIN, ROLE_LEADER)),
 ):
     q = select(AttendanceRecord, User).join(User, AttendanceRecord.user_id == User.id)
-    if current.role == ROLE_LEADER:
-        q = q.where(User.audience == current.audience)  # leader — только своя аудитория
-    elif audience:
+    if audience:
         q = q.where(User.audience == audience)
     if user_id:
         q = q.where(AttendanceRecord.user_id == user_id)
@@ -182,16 +180,17 @@ def delete_record(
 
 @router.get("/now-working", response_model=list[NowWorkingOut])
 def now_working(
+    audience: str | None = None,
     db: Session = Depends(get_db),
-    current: User = Depends(require_roles(ROLE_ADMIN, ROLE_LEADER)),
+    _: User = Depends(require_roles(ROLE_ADMIN, ROLE_LEADER)),
 ):
     q = (
         select(AttendanceRecord, User)
         .join(User, AttendanceRecord.user_id == User.id)
         .where(AttendanceRecord.check_out.is_(None))
     )
-    if current.role == ROLE_LEADER:
-        q = q.where(User.audience == current.audience)
+    if audience:
+        q = q.where(User.audience == audience)
     return [
         NowWorkingOut(
             user_id=u.id,

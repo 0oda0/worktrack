@@ -63,9 +63,7 @@ def require_roles(*roles: str):
 
 
 def assert_can_access(current: User, target: User) -> None:
-    """Worker — только себя; leader — свою аудиторию; admin — всех."""
-    if current.role == ROLE_ADMIN or current.id == target.id:
-        return
-    if current.role == ROLE_LEADER and current.audience == target.audience:
+    """Worker — только себя; leader и admin — всех сотрудников."""
+    if current.role in (ROLE_ADMIN, ROLE_LEADER) or current.id == target.id:
         return
     raise HTTPException(status.HTTP_403_FORBIDDEN, "Access denied")

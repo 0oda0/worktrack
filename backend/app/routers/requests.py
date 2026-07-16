@@ -76,8 +76,9 @@ def my_requests(db: Session = Depends(get_db), user: User = Depends(require_appr
 
 @router.get("/pending", response_model=list[WorkRequestOut])
 def pending_requests(
+    audience: str | None = None,
     db: Session = Depends(get_db),
-    current: User = Depends(require_roles(ROLE_ADMIN, ROLE_LEADER)),
+    _: User = Depends(require_roles(ROLE_ADMIN, ROLE_LEADER)),
 ):
     q = (
         select(WorkRequest)
@@ -85,8 +86,8 @@ def pending_requests(
         .where(WorkRequest.status == REQUEST_PENDING)
         .order_by(WorkRequest.created_at)
     )
-    if current.role == ROLE_LEADER:
-        q = q.where(User.audience == current.audience)
+    if audience:
+        q = q.where(User.audience == audience)
     return db.scalars(q).all()
 
 
@@ -97,7 +98,7 @@ def _load_pending(db: Session, current: User, request_id: int) -> tuple[WorkRequ
     if req.status != REQUEST_PENDING:
         raise HTTPException(status.HTTP_409_CONFLICT, "Запрос уже обработан")
     target = db.get(User, req.user_id)
-    assert_can_access(current, target)  # leader — только своя аудитория
+    assert_can_access(current, target)  # leader и admin — любой сотрудник
     return req, target
 
 

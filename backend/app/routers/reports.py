@@ -24,33 +24,36 @@ def _period(start: date | None, end: date | None) -> tuple[date, date]:
 def summary(
     start: date | None = None,
     end: date | None = None,
+    audience: str | None = None,
     db: Session = Depends(get_db),
-    current: User = Depends(require_roles(ROLE_ADMIN, ROLE_LEADER)),
+    _: User = Depends(require_roles(ROLE_ADMIN, ROLE_LEADER)),
 ):
     s, e = _period(start, end)
-    return reports.summary(db, reports.workers_in_scope(db, current), s, e)
+    return reports.summary(db, reports.workers_in_scope(db, audience), s, e)
 
 
 @router.get("/rating", response_model=list[RatingRowOut])
 def rating(
     start: date | None = None,
     end: date | None = None,
+    audience: str | None = None,
     db: Session = Depends(get_db),
-    current: User = Depends(require_roles(ROLE_ADMIN, ROLE_LEADER)),
+    _: User = Depends(require_roles(ROLE_ADMIN, ROLE_LEADER)),
 ):
     s, e = _period(start, end)
-    return reports.rating(db, reports.workers_in_scope(db, current), s, e)
+    return reports.rating(db, reports.workers_in_scope(db, audience), s, e)
 
 
 @router.get("/export.xlsx")
 def export_xlsx(
     start: date | None = None,
     end: date | None = None,
+    audience: str | None = None,
     db: Session = Depends(get_db),
-    current: User = Depends(require_roles(ROLE_ADMIN, ROLE_LEADER)),
+    _: User = Depends(require_roles(ROLE_ADMIN, ROLE_LEADER)),
 ):
     s, e = _period(start, end)
-    rows = reports.summary(db, reports.workers_in_scope(db, current), s, e)
+    rows = reports.summary(db, reports.workers_in_scope(db, audience), s, e)
 
     wb = Workbook()
     ws = wb.active

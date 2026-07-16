@@ -155,7 +155,7 @@ def test_approve_today_blocked_if_open_shift_exists(client):
 
 # ---- права и статусы ----
 
-def test_leader_cannot_review_other_audience(client):
+def test_leader_reviews_any_audience(client):
     _, tok = approve_user(client, "w903@mtuci.ru", audience="903")
     _, ltok = approve_user(client, "lead203@mtuci.ru", role="leader", audience="203")
     pd = past_date()
@@ -164,7 +164,7 @@ def test_leader_cannot_review_other_audience(client):
         json={"work_date": pd, "check_in": f"{pd}T09:00:00", "check_out": f"{pd}T17:00:00"},
     ).json()
     r = client.post(f"/api/requests/{req['id']}/approve", headers=auth(ltok), json={})
-    assert r.status_code == 403
+    assert r.status_code == 200  # лидер управляет всеми аудиториями
 
 
 def test_worker_cannot_list_pending(client):
@@ -196,7 +196,7 @@ def test_my_requests_lists_own(client):
     assert len(mine) == 1 and mine[0]["status"] == "pending"
 
 
-def test_leader_pending_scoped_to_audience(client):
+def test_leader_pending_sees_all_and_audience_filter(client):
     _, w203 = approve_user(client, "w203@mtuci.ru", audience="203")
     _, w903 = approve_user(client, "w903@mtuci.ru", audience="903")
     _, ltok = approve_user(client, "lead@mtuci.ru", role="leader", audience="203")
@@ -207,4 +207,6 @@ def test_leader_pending_scoped_to_audience(client):
             json={"work_date": pd, "check_in": f"{pd}T09:00:00", "check_out": f"{pd}T17:00:00"},
         )
     pending = client.get("/api/requests/pending", headers=auth(ltok)).json()
-    assert len(pending) == 1  # только своя аудитория 203
+    assert len(pending) == 2  # лидер видит все аудитории
+    filtered = client.get("/api/requests/pending?audience=903", headers=auth(ltok)).json()
+    assert len(filtered) == 1  # фильтр по аудитории

@@ -109,10 +109,10 @@ def test_worker_cannot_see_other_timesheet(client):
     assert client.get(f"/api/attendance/timesheet/{uid_a}", headers=auth(tok_b)).status_code == 403
 
 
-def test_leader_sees_own_audience_only(client):
+def test_leader_sees_any_audience(client):
     uid_w, _ = approved_worker(client, "w203@mtuci.ru", "203")
     uid_other, _ = approved_worker(client, "w903@mtuci.ru", "903")
-    # делаем лидера 203
+    # лидер 203 управляет всеми — видит и чужую аудиторию 903
     uid_l = register(client, "lead@mtuci.ru").json()["id"]
     at = admin_token(client)
     client.post(
@@ -122,7 +122,7 @@ def test_leader_sees_own_audience_only(client):
     )
     tok_l = login(client, "lead@mtuci.ru")
     assert client.get(f"/api/attendance/timesheet/{uid_w}", headers=auth(tok_l)).status_code == 200
-    assert client.get(f"/api/attendance/timesheet/{uid_other}", headers=auth(tok_l)).status_code == 403
+    assert client.get(f"/api/attendance/timesheet/{uid_other}", headers=auth(tok_l)).status_code == 200
 
 
 def test_admin_sees_any_timesheet(client):

@@ -129,7 +129,7 @@ def test_delete_record(client):
     assert client.get(f"/api/admin/records?user_id={uid}", headers=auth(atok)).json() == []
 
 
-def test_leader_records_scoped_to_audience(client):
+def test_leader_sees_all_audiences_and_filter(client):
     uid_a, tok_a = approve_user(client, "a@mtuci.ru", audience="203")
     uid_b, tok_b = approve_user(client, "b@mtuci.ru", audience="903")
     _, ltok = approve_user(client, "lead@mtuci.ru", role="leader", audience="203")
@@ -138,17 +138,19 @@ def test_leader_records_scoped_to_audience(client):
     manual_record(client, tok_a, atok, pd)
     manual_record(client, tok_b, atok, pd)
     seen = client.get("/api/admin/records", headers=auth(ltok)).json()
-    assert {r["audience"] for r in seen} == {"203"}
+    assert {r["audience"] for r in seen} == {"203", "903"}  # лидер видит всех
+    filtered = client.get("/api/admin/records?audience=903", headers=auth(ltok)).json()
+    assert {r["audience"] for r in filtered} == {"903"}
 
 
-def test_leader_cannot_delete_other_audience_record(client):
+def test_leader_can_delete_any_audience_record(client):
     uid_b, tok_b = approve_user(client, "b@mtuci.ru", audience="903")
     _, ltok = approve_user(client, "lead@mtuci.ru", role="leader", audience="203")
     atok = admin_token(client)
     pd = past()
     manual_record(client, tok_b, atok, pd)
     rec = client.get("/api/admin/records", headers=auth(atok)).json()[0]
-    assert client.delete(f"/api/admin/records/{rec['id']}", headers=auth(ltok)).status_code == 403
+    assert client.delete(f"/api/admin/records/{rec['id']}", headers=auth(ltok)).status_code == 204
 
 
 # ---- now-working ----
@@ -161,6 +163,16 @@ def test_now_working(client):
     assert len(nw) == 1 and nw[0]["full_name"] == "U"
 
 
+def test_now_working_audience_filter(client):
+    _, tok_a = approve_user(client, "a@mtuci.ru", audience="203")
+    _, tok_b = approve_user(client, "b@mtuci.ru", audience="903")
+    atok = admin_token(client)
+    client.post("/api/attendance/check-in", headers=auth(tok_a), json=IN_ZONE)
+    client.post("/api/attendance/check-in", headers=auth(tok_b), json=IN_ZONE)
+    nw = client.get("/api/admin/now-working?audience=903", headers=auth(atok)).json()
+    assert {r["audience"] for r in nw} == {"903"}
+
+
 # ---- отчёты / рейтинг / Excel ----
 
 def test_summary_matches_timesheet(client):
@@ -171,6 +183,16 @@ def test_summary_matches_timesheet(client):
     s = client.get(f"/api/reports/summary?start={pd}&end={pd}", headers=auth(atok)).json()
     row = next(r for r in s if r["user_id"] == uid)
     assert row["total_hours"] == 8.0
+
+
+def test_reports_audience_filter(client):
+    approve_user(client, "a@mtuci.ru", audience="203")
+    approve_user(client, "b@mtuci.ru", audience="903")
+    atok = admin_token(client)
+    s = client.get("/api/reports/summary?audience=903", headers=auth(atok)).json()
+    assert {r["audience"] for r in s} == {"903"}
+    r = client.get("/api/reports/rating?audience=903", headers=auth(atok)).json()
+    assert {x["audience"] for x in r} == {"903"}
 
 
 def test_rating_sorted_by_score(client):

@@ -5,7 +5,7 @@ from datetime import date
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import ROLE_ADMIN, ROLE_WORKER, AttendanceRecord, Holiday, User
+from app.models import ROLE_WORKER, AttendanceRecord, Holiday, User
 from app.services.settings_store import TZ
 from app.services.timesheet import compute_stats, is_weekend_or_holiday
 
@@ -90,9 +90,9 @@ def rating(db: Session, users: list[User], start: date, end: date) -> list[dict]
     return rows
 
 
-def workers_in_scope(db: Session, current: User) -> list[User]:
-    """Работники, доступные текущему: admin — все, leader — своя аудитория."""
+def workers_in_scope(db: Session, audience: str | None = None) -> list[User]:
+    """Работники (admin и leader видят всех); audience — опциональный фильтр."""
     q = select(User).where(User.role == ROLE_WORKER, User.is_active.is_(True))
-    if current.role != ROLE_ADMIN:
-        q = q.where(User.audience == current.audience)
+    if audience:
+        q = q.where(User.audience == audience)
     return list(db.scalars(q.order_by(User.full_name)).all())
