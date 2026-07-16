@@ -15,7 +15,6 @@ export const exportExcel = async (req: Request, res: Response) => {
     const user = await User.findByPk(parseInt(userId as string));
     if (user) users = [user];
   } else {
-    // Все пользователи, к которым есть доступ (будет фильтроваться в middleware)
     users = await User.findAll({ where: { role: 'worker' } });
   }
 
@@ -33,7 +32,7 @@ export const exportExcel = async (req: Request, res: Response) => {
   ];
 
   for (const user of users) {
-    const stats = await getStats(user.id, startDate, endDate); // функция из attendanceService
+    const stats = await getStats(user.id, startDate, endDate);
     worksheet.addRow({
       fullName: user.fullName,
       audience: user.audience,
@@ -52,7 +51,6 @@ export const exportExcel = async (req: Request, res: Response) => {
 };
 
 export const exportPDF = async (req: Request, res: Response) => {
-  // Аналогично, но с PDFKit – упрощённо
   const { start, end } = req.query;
   const startDate = start ? new Date(start as string) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
   const endDate = end ? new Date(end as string) : new Date();
@@ -80,6 +78,3 @@ export const exportPDF = async (req: Request, res: Response) => {
 
   doc.end();
 };
-
-// Импортируем getStats (чтобы не дублировать)
-import { getStats } from '../services/attendanceService';
