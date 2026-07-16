@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface Coords {
   latitude: number;
@@ -9,8 +9,8 @@ export const useGeolocated = () => {
   const [coords, setCoords] = useState<Coords | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const getPosition = () => {
-    return new Promise<void>((resolve) => {
+  const getPosition = (): Promise<void> => {
+    return new Promise((resolve) => {
       if (!navigator.geolocation) {
         setError('Геолокация не поддерживается');
         resolve();

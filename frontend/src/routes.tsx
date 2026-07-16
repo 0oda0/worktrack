@@ -13,7 +13,7 @@ const routes: RouteObject[] = [
     path: '/',
     element: <ProtectedRoute />,
     children: [
-      { path: '/', element: <CheckIn /> },
+      { index: true, element: <CheckIn /> },
       { path: '/timesheet', element: <Timesheet /> },
       { path: '/requests', element: <Requests /> },
       { path: '/reports', element: <Reports /> },

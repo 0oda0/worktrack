@@ -1,135 +1,91 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchUsers, createUser, updateUser, deleteUser } from '../store/slices/userSlice';
-import { fetchHolidays, createHoliday, updateHoliday, deleteHoliday } from '../store/slices/holidaySlice';
-import { Table, Tabs, Button, Modal, Form, Input, Select, DatePicker } from '../components/common';
+import { fetchUsers, addUser, editUser, removeUser } from '../store/slices/userSlice';
+import { fetchHolidays, addHoliday, editHoliday, removeHoliday } from '../store/slices/holidaySlice';
+import { RootState } from '../store';
 
-const AdminPanel: React.FC = () => {
+const AdminPanel = () => {
   const dispatch = useDispatch();
-  const { users } = useSelector((state: any) => state.users);
-  const { holidays } = useSelector((state: any) => state.holidays);
-  const [userModal, setUserModal] = useState(false);
-  const [holidayModal, setHolidayModal] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
-  const [editingHoliday, setEditingHoliday] = useState(null);
-  const [userForm] = Form.useForm();
-  const [holidayForm] = Form.useForm();
+  const { users } = useSelector((state: RootState) => state.users);
+  const { holidays } = useSelector((state: RootState) => state.holidays);
+  const [userForm, setUserForm] = useState({ fullName: '', email: '', password: '', role: 'worker', audience: '', hireDate: '' });
+  const [holidayForm, setHolidayForm] = useState({ date: '', name: '' });
+  const [editingUserId, setEditingUserId] = useState<number | null>(null);
+  const [editingHolidayId, setEditingHolidayId] = useState<number | null>(null);
 
   useEffect(() => {
     dispatch(fetchUsers());
     dispatch(fetchHolidays());
   }, [dispatch]);
 
-  const handleUserSubmit = (values: any) => {
-    if (editingUser) {
-      dispatch(updateUser({ id: editingUser.id, ...values }));
+  const handleUserSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingUserId) {
+      dispatch(editUser({ id: editingUserId, data: userForm }));
     } else {
-      dispatch(createUser(values));
+      dispatch(addUser(userForm));
     }
-    setUserModal(false);
-    setEditingUser(null);
-    userForm.resetFields();
+    setUserForm({ fullName: '', email: '', password: '', role: 'worker', audience: '', hireDate: '' });
+    setEditingUserId(null);
   };
 
-  const handleHolidaySubmit = (values: any) => {
-    if (editingHoliday) {
-      dispatch(updateHoliday({ id: editingHoliday.id, ...values }));
+  const handleHolidaySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingHolidayId) {
+      dispatch(editHoliday({ id: editingHolidayId, data: holidayForm }));
     } else {
-      dispatch(createHoliday(values));
+      dispatch(addHoliday(holidayForm));
     }
-    setHolidayModal(false);
-    setEditingHoliday(null);
-    holidayForm.resetFields();
+    setHolidayForm({ date: '', name: '' });
+    setEditingHolidayId(null);
   };
-
-  const userColumns = [
-    { title: 'ФИО', dataIndex: 'fullName' },
-    { title: 'Email', dataIndex: 'email' },
-    { title: 'Роль', dataIndex: 'role' },
-    { title: 'Аудитория', dataIndex: 'audience' },
-    { title: 'Дата трудоустройства', dataIndex: 'hireDate' },
-    {
-      title: 'Действия',
-      render: (record: any) => (
-        <>
-          <Button onClick={() => { setEditingUser(record); userForm.setFieldsValue(record); setUserModal(true); }}>Редактировать</Button>
-          <Button onClick={() => dispatch(deleteUser(record.id))}>Удалить</Button>
-        </>
-      ),
-    },
-  ];
-
-  const holidayColumns = [
-    { title: 'Дата', dataIndex: 'date' },
-    { title: 'Название', dataIndex: 'name' },
-    {
-      title: 'Действия',
-      render: (record: any) => (
-        <>
-          <Button onClick={() => { setEditingHoliday(record); holidayForm.setFieldsValue(record); setHolidayModal(true); }}>Редактировать</Button>
-          <Button onClick={() => dispatch(deleteHoliday(record.id))}>Удалить</Button>
-        </>
-      ),
-    },
-  ];
 
   return (
     <div>
-      <h1>Панель администратора</h1>
-      <Tabs>
-        <Tabs.TabPane tab="Пользователи" key="users">
-          <Button onClick={() => { setEditingUser(null); userForm.resetFields(); setUserModal(true); }}>Добавить пользователя</Button>
-          <Table columns={userColumns} dataSource={users} rowKey="id" />
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Праздники" key="holidays">
-          <Button onClick={() => { setEditingHoliday(null); holidayForm.resetFields(); setHolidayModal(true); }}>Добавить праздник</Button>
-          <Table columns={holidayColumns} dataSource={holidays} rowKey="id" />
-        </Tabs.TabPane>
-      </Tabs>
+      <h1>Админ-панель</h1>
+      <h2>Пользователи</h2>
+      <form onSubmit={handleUserSubmit}>
+        <input placeholder="ФИО" value={userForm.fullName} onChange={(e) => setUserForm({ ...userForm, fullName: e.target.value })} required />
+        <input placeholder="Email" value={userForm.email} onChange={(e) => setUserForm({ ...userForm, email: e.target.value })} required />
+        <input placeholder="Пароль" type="password" value={userForm.password} onChange={(e) => setUserForm({ ...userForm, password: e.target.value })} required={!editingUserId} />
+        <select value={userForm.role} onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}>
+          <option value="worker">Работник</option>
+          <option value="leader">Старший</option>
+          <option value="admin">Админ</option>
+        </select>
+        <select value={userForm.audience} onChange={(e) => setUserForm({ ...userForm, audience: e.target.value })}>
+          <option value="">Нет</option>
+          <option value="203">203</option>
+          <option value="903">903</option>
+          <option value="906">906</option>
+        </select>
+        <input type="date" value={userForm.hireDate} onChange={(e) => setUserForm({ ...userForm, hireDate: e.target.value })} required />
+        <button type="submit">{editingUserId ? 'Обновить' : 'Добавить'}</button>
+      </form>
+      <ul>
+        {users.map((u: any) => (
+          <li key={u.id}>
+            {u.fullName} ({u.email}) - {u.role}
+            <button onClick={() => { setEditingUserId(u.id); setUserForm(u); }}>Редактировать</button>
+            <button onClick={() => dispatch(removeUser(u.id))}>Удалить</button>
+          </li>
+        ))}
+      </ul>
 
-      <Modal visible={userModal} onCancel={() => setUserModal(false)} footer={null}>
-        <Form form={userForm} onFinish={handleUserSubmit}>
-          <Form.Item name="fullName" label="ФИО" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="email" label="Email" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="password" label="Пароль" rules={[{ required: !editingUser }]}>
-            <Input.Password />
-          </Form.Item>
-          <Form.Item name="role" label="Роль" rules={[{ required: true }]}>
-            <Select>
-              <Select.Option value="worker">Работник</Select.Option>
-              <Select.Option value="leader">Старший состав</Select.Option>
-              <Select.Option value="admin">Администратор</Select.Option>
-            </Select>
-          </Form.Item>
-          <Form.Item name="audience" label="Аудитория">
-            <Select>
-              <Select.Option value="203">203</Select.Option>
-              <Select.Option value="903">903</Select.Option>
-              <Select.Option value="906">906</Select.Option>
-            </Select>
-          </Form.Item>
-          <Form.Item name="hireDate" label="Дата трудоустройства" rules={[{ required: true }]}>
-            <DatePicker />
-          </Form.Item>
-          <Button type="primary" htmlType="submit">Сохранить</Button>
-        </Form>
-      </Modal>
-
-      <Modal visible={holidayModal} onCancel={() => setHolidayModal(false)} footer={null}>
-        <Form form={holidayForm} onFinish={handleHolidaySubmit}>
-          <Form.Item name="date" label="Дата" rules={[{ required: true }]}>
-            <DatePicker />
-          </Form.Item>
-          <Form.Item name="name" label="Название" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Button type="primary" htmlType="submit">Сохранить</Button>
-        </Form>
-      </Modal>
+      <h2>Праздники</h2>
+      <form onSubmit={handleHolidaySubmit}>
+        <input type="date" value={holidayForm.date} onChange={(e) => setHolidayForm({ ...holidayForm, date: e.target.value })} required />
+        <input placeholder="Название" value={holidayForm.name} onChange={(e) => setHolidayForm({ ...holidayForm, name: e.target.value })} required />
+        <button type="submit">{editingHolidayId ? 'Обновить' : 'Добавить'}</button>
+      </form>
+      <ul>
+        {holidays.map((h: any) => (
+          <li key={h.id}>{h.date} - {h.name}
+            <button onClick={() => { setEditingHolidayId(h.id); setHolidayForm(h); }}>Редактировать</button>
+            <button onClick={() => dispatch(removeHoliday(h.id))}>Удалить</button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };

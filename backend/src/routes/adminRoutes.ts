@@ -5,6 +5,7 @@ import { ROLES } from '../config/constants';
 import { getHolidays, createHoliday, updateHoliday, deleteHoliday } from '../controllers/holidayController';
 import { getRating } from '../controllers/ratingController';
 import { exportExcel, exportPDF } from '../controllers/exportController';
+import { getUsers, createUser, updateUser, deleteUser } from '../controllers/adminController';
 
 const router = Router();
 
@@ -24,5 +25,10 @@ router.get('/rating', getRating);
 // Экспорт – доступен админам и лидерам (с проверкой доступа к данным)
 router.get('/export/excel', requireRole(ROLES.ADMIN, ROLES.LEADER), checkAudienceAccess, exportExcel);
 router.get('/export/pdf', requireRole(ROLES.ADMIN, ROLES.LEADER), checkAudienceAccess, exportPDF);
+
+router.get('/users', requireRole(ROLES.ADMIN), getUsers);
+router.post('/users', requireRole(ROLES.ADMIN), createUser);
+router.put('/users/:id', requireRole(ROLES.ADMIN), updateUser);
+router.delete('/users/:id', requireRole(ROLES.ADMIN), deleteUser);
 
 export default router;

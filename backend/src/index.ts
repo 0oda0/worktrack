@@ -14,5 +14,5 @@ const start = async () => {
     process.exit(1);
   }
 };
-
+router.use('/admin', adminRoutes);
 start();

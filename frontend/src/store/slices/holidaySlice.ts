@@ -1,23 +1,23 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import instance from '../../api/axiosInstance';
+import { getHolidays, createHoliday, updateHoliday, deleteHoliday } from '../../api/adminApi';
 
 export const fetchHolidays = createAsyncThunk('holidays/fetch', async () => {
-  const res = await instance.get('/admin/holidays');
+  const res = await getHolidays();
   return res.data;
 });
 
-export const createHoliday = createAsyncThunk('holidays/create', async (data: any) => {
-  const res = await instance.post('/admin/holidays', data);
+export const addHoliday = createAsyncThunk('holidays/add', async (data: any) => {
+  const res = await createHoliday(data);
   return res.data;
 });
 
-export const updateHoliday = createAsyncThunk('holidays/update', async ({ id, ...data }: any) => {
-  const res = await instance.put(`/admin/holidays/${id}`, data);
+export const editHoliday = createAsyncThunk('holidays/edit', async ({ id, data }: any) => {
+  const res = await updateHoliday(id, data);
   return res.data;
 });
 
-export const deleteHoliday = createAsyncThunk('holidays/delete', async (id: number) => {
-  await instance.delete(`/admin/holidays/${id}`);
+export const removeHoliday = createAsyncThunk('holidays/remove', async (id: number) => {
+  await deleteHoliday(id);
   return id;
 });
 
@@ -28,12 +28,12 @@ const holidaySlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchHolidays.fulfilled, (state, action) => { state.holidays = action.payload; })
-      .addCase(createHoliday.fulfilled, (state, action) => { state.holidays.push(action.payload); })
-      .addCase(updateHoliday.fulfilled, (state, action) => {
+      .addCase(addHoliday.fulfilled, (state, action) => { state.holidays.push(action.payload); })
+      .addCase(editHoliday.fulfilled, (state, action) => {
         const idx = state.holidays.findIndex((h: any) => h.id === action.payload.id);
         if (idx >= 0) state.holidays[idx] = action.payload;
       })
-      .addCase(deleteHoliday.fulfilled, (state, action) => {
+      .addCase(removeHoliday.fulfilled, (state, action) => {
         state.holidays = state.holidays.filter((h: any) => h.id !== action.payload);
       });
   },
