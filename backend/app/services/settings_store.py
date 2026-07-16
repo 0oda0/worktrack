@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
 from sqlalchemy.orm import Session
@@ -21,3 +21,10 @@ def get_office(db: Session) -> tuple[float, float, float]:
 
 def local_today():
     return datetime.now(TZ).date()
+
+
+def to_utc(dt: datetime) -> datetime:
+    """Наивное время трактуем как локальное (APP_TZ), храним в UTC."""
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=TZ)
+    return dt.astimezone(timezone.utc)

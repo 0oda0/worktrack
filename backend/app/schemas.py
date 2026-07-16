@@ -88,6 +88,31 @@ class HolidayOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class WorkRequestIn(BaseModel):
+    work_date: date
+    check_in: datetime
+    check_out: datetime | None = None
+    comment: str = Field(default="", max_length=1000)
+
+
+class WorkRequestOut(BaseModel):
+    id: int
+    user_id: int
+    work_date: date
+    check_in: datetime
+    check_out: datetime | None
+    comment: str
+    status: str
+    reviewed_by: int | None
+    review_comment: str
+
+    model_config = {"from_attributes": True}
+
+
+class ReviewIn(BaseModel):
+    comment: str = Field(default="", max_length=1000)
+
+
 class ApproveIn(BaseModel):
     role: str = Field(pattern="^(" + "|".join(ROLES) + ")$")
     audience: str | None = None
