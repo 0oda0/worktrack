@@ -71,3 +71,15 @@ export const deleteRecord = async (req: Request, res: Response) => {
   await record.destroy();
   res.status(204).send();
 };
+
+export const getTimesheetForUser = async (req: Request, res: Response) => {
+  const targetUserId = parseInt(req.params.userId);
+  const { start, end } = req.query;
+  
+  const startDate = start ? new Date(start as string) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  const endDate = end ? new Date(end as string) : new Date();
+  
+  const stats = await getStats(targetUserId, startDate, endDate);
+  const days = await getDetailedDays(targetUserId, startDate, endDate);
+  res.json({ stats, days });
+};

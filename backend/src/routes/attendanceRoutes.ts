@@ -1,7 +1,14 @@
 import { Router } from 'express';
 import { authMiddleware } from '../middleware/auth';
-import { requireRole } from '../middleware/roleCheck';
-import { checkIn, checkOut, getTimesheet, updateRecord, deleteRecord } from '../controllers/attendanceController';
+import { requireRole, checkAudienceAccess } from '../middleware/roleCheck';
+import { 
+  checkIn, 
+  checkOut, 
+  getTimesheet, 
+  getTimesheetForUser,
+  updateRecord, 
+  deleteRecord 
+} from '../controllers/attendanceController';
 import { ROLES } from '../config/constants';
 
 const router = Router();

@@ -3,13 +3,14 @@ import { User, AttendanceRecord } from '../models';
 import { Op } from 'sequelize';
 import ExcelJS from 'exceljs';
 import PDFDocument from 'pdfkit';
+import { getStats } from '../services/attendanceService';
 
 export const exportExcel = async (req: Request, res: Response) => {
   const { start, end, userId } = req.query;
   const startDate = start ? new Date(start as string) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
   const endDate = end ? new Date(end as string) : new Date();
 
-  let users = [];
+  let users: any[] = [];
   if (userId) {
     const user = await User.findByPk(parseInt(userId as string));
     if (user) users = [user];
