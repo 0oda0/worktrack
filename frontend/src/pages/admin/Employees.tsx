@@ -33,7 +33,7 @@ interface FormValues {
   full_name: string
   role: Role
   audience: Audience | ''
-  hire_date: string
+  hire_date: string | null
 }
 
 export default function Employees() {
@@ -49,7 +49,7 @@ export default function Employees() {
   const [opened, { open, close }] = useDisclosure(false)
 
   const form = useForm<FormValues>({
-    initialValues: { full_name: '', role: 'worker', audience: '203', hire_date: '' },
+    initialValues: { full_name: '', role: 'worker', audience: '203', hire_date: null },
     validate: {
       hire_date: (v) => (v ? null : 'Укажите дату трудоустройства'),
       audience: (v, values) =>
@@ -66,7 +66,7 @@ export default function Employees() {
   const startApprove = (u: User) => {
     setMode('approve')
     setTarget(u)
-    form.setValues({ full_name: u.full_name, role: 'worker', audience: '203', hire_date: '' })
+    form.setValues({ full_name: u.full_name, role: 'worker', audience: '203', hire_date: null })
     open()
   }
 
@@ -77,7 +77,7 @@ export default function Employees() {
       full_name: u.full_name,
       role: u.role,
       audience: u.audience ?? '',
-      hire_date: u.hire_date ?? '',
+      hire_date: u.hire_date ?? null,
     })
     open()
   }
@@ -85,11 +85,12 @@ export default function Employees() {
   const submit = form.onSubmit(async (vals) => {
     if (!target) return
     const audienceValue = vals.role === 'admin' ? null : (vals.audience as Audience)
+    const hireDate = vals.hire_date as string // валидация гарантирует непустую дату
     try {
       if (mode === 'approve') {
         await approve.mutateAsync({
           id: target.id,
-          data: { role: vals.role, audience: audienceValue, hire_date: vals.hire_date },
+          data: { role: vals.role, audience: audienceValue, hire_date: hireDate },
         })
         notifications.show({ color: 'green', message: 'Пользователь одобрен' })
       } else {
@@ -99,7 +100,7 @@ export default function Employees() {
             full_name: vals.full_name,
             role: vals.role,
             audience: audienceValue,
-            hire_date: vals.hire_date,
+            hire_date: hireDate,
           },
         })
         notifications.show({ color: 'green', message: 'Данные обновлены' })
@@ -213,7 +214,12 @@ export default function Employees() {
                   </Table.Td>
                   <Table.Td>
                     <Group gap={4} wrap="nowrap">
-                      <ActionIcon variant="subtle" color="mtuci" onClick={() => startEdit(u)}>
+                      <ActionIcon
+                        variant="subtle"
+                        color="mtuci"
+                        aria-label="Редактировать сотрудника"
+                        onClick={() => startEdit(u)}
+                      >
                         <IconPencil size={20} />
                       </ActionIcon>
                       <Button

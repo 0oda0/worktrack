@@ -144,3 +144,15 @@ export interface UpdateUserInput {
   is_approved?: boolean
   is_active?: boolean
 }
+
+export interface Holiday {
+  id: number
+  date: string
+  name: string
+}
+
+export interface Settings {
+  office_lat: number
+  office_lng: number
+  office_radius_m: number
+}

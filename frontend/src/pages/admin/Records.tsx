@@ -205,6 +205,7 @@ export default function Records() {
                           href={`https://www.openstreetmap.org/?mlat=${r.lat_in}&mlon=${r.lng_in}#map=17/${r.lat_in}/${r.lng_in}`}
                           target="_blank"
                           rel="noreferrer"
+                          aria-label="Показать место отметки на карте"
                         >
                           <IconMapPin size={18} />
                         </Anchor>
@@ -214,10 +215,20 @@ export default function Records() {
                     </Table.Td>
                     <Table.Td>
                       <Group gap={4} wrap="nowrap">
-                        <ActionIcon variant="subtle" color="mtuci" onClick={() => startEdit(r)}>
+                        <ActionIcon
+                          variant="subtle"
+                          color="mtuci"
+                          aria-label="Редактировать отметку"
+                          onClick={() => startEdit(r)}
+                        >
                           <IconPencil size={20} />
                         </ActionIcon>
-                        <ActionIcon variant="subtle" color="red" onClick={() => confirmDelete(r)}>
+                        <ActionIcon
+                          variant="subtle"
+                          color="red"
+                          aria-label="Удалить отметку"
+                          onClick={() => confirmDelete(r)}
+                        >
                           <IconTrash size={20} />
                         </ActionIcon>
                       </Group>

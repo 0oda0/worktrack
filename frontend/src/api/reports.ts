@@ -24,3 +24,19 @@ export function useRating(start: string, end: string, audience?: Audience) {
         .data,
   })
 }
+
+/** Скачивает Excel-сводку (Bearer добавляет интерсептор), инициирует загрузку в браузере. */
+export async function downloadReportXlsx(start: string, end: string, audience?: Audience) {
+  const res = await api.get('/reports/export.xlsx', {
+    params: periodParams(start, end, audience),
+    responseType: 'blob',
+  })
+  const url = URL.createObjectURL(res.data as Blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `worktrack_${start}_${end}.xlsx`
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
+}
