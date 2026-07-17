@@ -7,6 +7,9 @@ import { WorkerShell } from './layouts/WorkerShell'
 import Login from './pages/Login'
 import PendingApproval from './pages/PendingApproval'
 import Register from './pages/Register'
+import CheckIn from './pages/worker/CheckIn'
+import Requests from './pages/worker/Requests'
+import Timesheet from './pages/worker/Timesheet'
 
 export default function App() {
   return (
@@ -19,9 +22,9 @@ export default function App() {
       {/* работник (mobile-first) */}
       <Route element={<ProtectedRoute allow={['worker']} />}>
         <Route element={<WorkerShell />}>
-          <Route path="/" element={<Placeholder title="Отметка" />} />
-          <Route path="/timesheet" element={<Placeholder title="Табель" />} />
-          <Route path="/requests" element={<Placeholder title="Заявки" />} />
+          <Route path="/" element={<CheckIn />} />
+          <Route path="/timesheet" element={<Timesheet />} />
+          <Route path="/requests" element={<Requests />} />
         </Route>
       </Route>
 
