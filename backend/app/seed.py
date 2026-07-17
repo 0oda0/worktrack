@@ -1,9 +1,21 @@
+import json
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.auth import hash_password
 from app.config import settings
 from app.models import ROLE_ADMIN, Setting, User
+
+# территория МТУСИ (Авиамоторная) — кольцо GeoJSON [[lng,lat],…]; зона прихода по умолчанию
+MTUCI_POLYGON = [
+    [37.713538, 55.755945],
+    [37.713538, 55.754462],
+    [37.716068, 55.754462],
+    [37.716068, 55.755945],
+    [37.71481, 55.755966],
+    [37.713538, 55.755945],
+]
 
 
 def seed(db: Session) -> None:
@@ -23,6 +35,7 @@ def seed(db: Session) -> None:
         "office_lat": str(settings.office_lat),
         "office_lng": str(settings.office_lng),
         "office_radius_m": str(settings.office_radius_m),
+        "office_polygon": json.dumps(MTUCI_POLYGON),
     }
     for key, value in defaults.items():
         if not db.get(Setting, key):

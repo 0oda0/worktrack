@@ -2,7 +2,7 @@
 
 from datetime import date, timedelta
 
-IN_ZONE = {"lat": 55.7558, "lng": 37.6173}
+IN_ZONE = {"lat": 55.7552, "lng": 37.7148}  # внутри полигона МТУСИ
 
 
 def register(client, email, name="U"):
