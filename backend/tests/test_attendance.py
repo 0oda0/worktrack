@@ -92,6 +92,28 @@ def test_checkin_checkout_cycle_and_status(client):
     assert client.get("/api/attendance/status", headers=auth(tok)).json() is not None
 
 
+def test_checkin_uses_polygon_zone(client):
+    # админ задаёт полигон-квадрат вокруг центра Москвы
+    at = admin_token(client)
+    ring = [[37.61, 55.75], [37.62, 55.75], [37.62, 55.76], [37.61, 55.76], [37.61, 55.75]]
+    r = client.put(
+        "/api/admin/settings",
+        headers=auth(at),
+        json={"office_lat": 55.7558, "office_lng": 37.6173, "office_radius_m": 200, "office_polygon": ring},
+    )
+    assert r.status_code == 200 and r.json()["office_polygon"] == ring
+
+    # приход внутри полигона — «в зоне»
+    _, t_in = approved_worker(client, "poly-in@mtuci.ru")
+    got_in = client.post("/api/attendance/check-in", headers=auth(t_in), json={"lat": 55.7558, "lng": 37.6173})
+    assert got_in.json()["out_of_zone_in"] is False
+
+    # приход севернее квадрата — «вне зоны»
+    _, t_out = approved_worker(client, "poly-out@mtuci.ru")
+    got_out = client.post("/api/attendance/check-in", headers=auth(t_out), json={"lat": 55.7700, "lng": 37.6173})
+    assert got_out.json()["out_of_zone_in"] is True
+
+
 def test_unapproved_cannot_checkin(client):
     register(client, "new@mtuci.ru")
     tok = login(client, "new@mtuci.ru")

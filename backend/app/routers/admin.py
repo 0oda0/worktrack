@@ -1,3 +1,4 @@
+import json
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -207,8 +208,10 @@ def now_working(
 
 @router.get("/settings", response_model=SettingsOut)
 def get_settings(db: Session = Depends(get_db), _: User = Depends(require_roles(ROLE_ADMIN))):
-    lat, lng, radius = get_office(db)
-    return SettingsOut(office_lat=lat, office_lng=lng, office_radius_m=radius)
+    polygon, lat, lng, radius = get_office(db)
+    return SettingsOut(
+        office_lat=lat, office_lng=lng, office_radius_m=radius, office_polygon=polygon
+    )
 
 
 @router.put("/settings", response_model=SettingsOut)
@@ -217,15 +220,18 @@ def update_settings(
     db: Session = Depends(get_db),
     _: User = Depends(require_roles(ROLE_ADMIN)),
 ):
-    for key, value in {
-        "office_lat": data.office_lat,
-        "office_lng": data.office_lng,
-        "office_radius_m": data.office_radius_m,
-    }.items():
+    values = {
+        "office_lat": str(data.office_lat),
+        "office_lng": str(data.office_lng),
+        "office_radius_m": str(data.office_radius_m),
+        # пустой полигон храним как "" → get_polygon вернёт None (откат на круг)
+        "office_polygon": json.dumps(data.office_polygon) if data.office_polygon else "",
+    }
+    for key, value in values.items():
         row = db.get(Setting, key)
         if row:
-            row.value = str(value)
+            row.value = value
         else:
-            db.add(Setting(key=key, value=str(value)))
+            db.add(Setting(key=key, value=value))
     db.commit()
     return SettingsOut(**data.model_dump())

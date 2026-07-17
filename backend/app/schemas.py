@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 from app.models import AUDIENCES, ROLES
 
@@ -190,6 +190,17 @@ class SettingsIn(BaseModel):
     office_lat: float = Field(ge=-90, le=90)
     office_lng: float = Field(ge=-180, le=180)
     office_radius_m: float = Field(gt=0)
+    # полигон геозоны — кольцо [[lng,lat],…]; None ⇒ используется круг
+    office_polygon: list[list[float]] | None = None
+
+    @field_validator("office_polygon")
+    @classmethod
+    def _valid_ring(cls, v: list[list[float]] | None) -> list[list[float]] | None:
+        if v is None:
+            return None
+        if len(v) < 3 or any(len(p) != 2 for p in v):
+            raise ValueError("Полигон должен содержать ≥3 точек вида [lng, lat]")
+        return v
 
 
 class SettingsOut(SettingsIn):

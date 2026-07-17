@@ -20,11 +20,11 @@ def test_haversine_one_degree_lat_is_about_111km():
 
 
 def test_in_and_out_of_zone():
-    office = (55.7558, 37.6173)
-    # ~15 м в сторону — внутри радиуса 200 м
-    assert is_out_of_zone(55.7559, 37.6173, *office, 200) is False
+    office = (55.7558, 37.6173)  # центр круга
+    # ~15 м в сторону — внутри радиуса 200 м (полигон не задан → круг)
+    assert is_out_of_zone(55.7559, 37.6173, None, *office, 200) is False
     # ~1 км — снаружи
-    assert is_out_of_zone(55.7648, 37.6173, *office, 200) is True
+    assert is_out_of_zone(55.7648, 37.6173, None, *office, 200) is True
 
 
 # ---- count_working_days ----

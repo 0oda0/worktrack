@@ -155,4 +155,5 @@ export interface Settings {
   office_lat: number
   office_lng: number
   office_radius_m: number
+  office_polygon: number[][] | null // кольцо [[lng,lat],…]; null ⇒ используется круг
 }
