@@ -7,9 +7,10 @@ function periodParams(start: string, end: string, audience?: Audience) {
   return { start, end, ...(audience ? { audience } : {}) }
 }
 
-export function useSummary(start: string, end: string, audience?: Audience) {
+export function useSummary(start: string, end: string, audience?: Audience, enabled = true) {
   return useQuery({
     queryKey: ['reports', 'summary', start, end, audience ?? 'all'],
+    enabled: enabled && Boolean(start && end),
     queryFn: async () =>
       (await api.get<SummaryRow[]>('/reports/summary', { params: periodParams(start, end, audience) }))
         .data,
@@ -34,7 +35,8 @@ export async function downloadReportXlsx(start: string, end: string, audience?: 
   const url = URL.createObjectURL(res.data as Blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `worktrack_${start}_${end}.xlsx`
+  const ymd = (d: string) => d.replaceAll('-', '')
+  a.download = `Отчет_${audience ?? 'все'}_${ymd(start)}-${ymd(end)}.xlsx`
   document.body.appendChild(a)
   a.click()
   a.remove()

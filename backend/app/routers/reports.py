@@ -1,9 +1,9 @@
 from datetime import date
 from io import BytesIO
+from urllib.parse import quote
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
-from openpyxl import Workbook
 from sqlalchemy.orm import Session
 
 from app.auth import require_roles
@@ -53,28 +53,22 @@ def export_xlsx(
     _: User = Depends(require_roles(ROLE_ADMIN, ROLE_LEADER)),
 ):
     s, e = _period(start, end)
-    rows = reports.summary(db, reports.workers_in_scope(db, audience), s, e)
+    report = reports.session_report(db, reports.workers_in_scope(db, audience), s, e)
 
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Табель"
-    headers = [
-        "ФИО", "Аудитория", "Дата трудоустройства",
-        "Всего часов", "Норма (9ч)", "Оплачиваемые (8ч)", "Переработка", "Выходные",
-    ]
-    ws.append(headers)
-    for r in rows:
-        ws.append([
-            r["full_name"], r["audience"], str(r["hire_date"] or ""),
-            r["total_hours"], r["work_hours"], r["paid_hours"], r["overtime"], r["weekend_hours"],
-        ])
+    title = f"Сектор_{audience}" if audience else "Отчёт"
+    wb = reports.export_workbook(report, title)
 
     buf = BytesIO()
     wb.save(buf)
     buf.seek(0)
-    filename = f"worktrack_{s}_{e}.xlsx"
+    # кириллица в имени: ASCII-фолбэк + RFC 5987 (заголовки HTTP — latin-1)
+    sector = audience or "все"
+    utf8_name = quote(f"Отчет_{sector}_{s:%Y%m%d}-{e:%Y%m%d}.xlsx")
+    disposition = (
+        f"attachment; filename=report_{s:%Y%m%d}-{e:%Y%m%d}.xlsx; filename*=UTF-8''{utf8_name}"
+    )
     return StreamingResponse(
         buf,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": f"attachment; filename={filename}"},
+        headers={"Content-Disposition": disposition},
     )

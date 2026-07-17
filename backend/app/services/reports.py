@@ -1,7 +1,8 @@
 """Сводка и рейтинг — поверх чистого compute_stats."""
 
-from datetime import date
+from datetime import date, timedelta
 
+from openpyxl import Workbook
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -88,6 +89,74 @@ def rating(db: Session, users: list[User], start: date, end: date) -> list[dict]
         )
     rows.sort(key=lambda r: r["score"], reverse=True)
     return rows
+
+
+# ---------- экспорт: детализация по сессиям ----------
+
+REPORT_HEADERS = [
+    "ФИО",
+    "Telegram Username",  # у нас здесь email (телеграма нет)
+    "Сектор",  # у нас — аудитория
+    "Начало сессии",
+    "Конец сессии",
+    "Длительность сессии",
+]
+_COL_WIDTHS = {"A": 40, "B": 20, "C": 8, "D": 21, "E": 21, "F": 22}
+_DURATION_FMT = "[h]:mm:ss"
+_DT_FMT = "%Y-%m-%d %H:%M:%S"
+
+
+def session_report(db: Session, users: list[User], start: date, end: date) -> list[dict]:
+    """По каждому сотруднику с сессиями в периоде: список смен (по убыванию даты) + сумма длительностей."""
+    report = []
+    for u in users:
+        recs = sorted(_records_for(db, u.id, start, end), key=lambda r: r.check_in, reverse=True)
+        if not recs:
+            continue  # без сессий человека не показываем (как в эталоне)
+        sessions = []
+        total = timedelta()
+        for r in recs:
+            dur = (r.check_out - r.check_in) if r.check_out else None
+            if dur:
+                total += dur
+            sessions.append(
+                {
+                    "start": r.check_in.astimezone(TZ).strftime(_DT_FMT),
+                    "end": r.check_out.astimezone(TZ).strftime(_DT_FMT) if r.check_out else None,
+                    "duration": dur,
+                }
+            )
+        report.append(
+            {
+                "full_name": u.full_name,
+                "email": u.email,
+                "audience": u.audience,
+                "sessions": sessions,
+                "total": total,
+            }
+        )
+    return report
+
+
+def export_workbook(report: list[dict], sheet_title: str = "Отчёт") -> Workbook:
+    """Строит книгу в формате эталона: строка на сессию, «Итого, ФИО», пустая строка-разделитель."""
+    wb = Workbook()
+    ws = wb.active
+    ws.title = sheet_title
+    ws.append(REPORT_HEADERS)
+    for person in report:
+        for s in person["sessions"]:
+            ws.append(
+                [person["full_name"], person["email"], person["audience"], s["start"], s["end"], s["duration"]]
+            )
+            if s["duration"] is not None:
+                ws.cell(ws.max_row, 6).number_format = _DURATION_FMT
+        ws.append([f"Итого, {person['full_name']}", None, None, None, None, person["total"]])
+        ws.cell(ws.max_row, 6).number_format = _DURATION_FMT
+        ws.append([])  # разделитель между сотрудниками
+    for col, width in _COL_WIDTHS.items():
+        ws.column_dimensions[col].width = width
+    return wb
 
 
 def workers_in_scope(db: Session, audience: str | None = None) -> list[User]:

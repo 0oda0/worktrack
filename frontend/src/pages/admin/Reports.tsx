@@ -1,5 +1,5 @@
 import { Button, Group, Skeleton, Stack, Table, Title } from '@mantine/core'
-import { MonthPickerInput } from '@mantine/dates'
+import { DatePickerInput } from '@mantine/dates'
 import { notifications } from '@mantine/notifications'
 import { IconDownload, IconReportAnalytics } from '@tabler/icons-react'
 import dayjs from 'dayjs'
@@ -10,17 +10,23 @@ import { downloadReportXlsx, useSummary } from '../../api/reports'
 import { AudienceFilter, type AudienceValue } from '../../components/AudienceFilter'
 import { EmptyState } from '../../components/EmptyState'
 
+type Range = [string | null, string | null]
+
 export default function Reports() {
   const [audience, setAudience] = useState<AudienceValue>('all')
-  const [month, setMonth] = useState<string>(dayjs().format('YYYY-MM-DD'))
+  const [range, setRange] = useState<Range>([
+    dayjs().startOf('month').format('YYYY-MM-DD'),
+    dayjs().format('YYYY-MM-DD'),
+  ])
   const [downloading, setDownloading] = useState(false)
 
-  const start = dayjs(month).startOf('month').format('YYYY-MM-DD')
-  const end = dayjs(month).endOf('month').format('YYYY-MM-DD')
+  const [start, end] = range
+  const ready = Boolean(start && end)
   const aud = audience === 'all' ? undefined : audience
-  const summary = useSummary(start, end, aud)
+  const summary = useSummary(start ?? '', end ?? '', aud)
 
   const download = async () => {
+    if (!start || !end) return
     setDownloading(true)
     try {
       await downloadReportXlsx(start, end, aud)
@@ -39,7 +45,7 @@ export default function Reports() {
           leftSection={<IconDownload size={18} />}
           onClick={download}
           loading={downloading}
-          disabled={!summary.data?.length}
+          disabled={!ready || !summary.data?.length}
         >
           Скачать Excel
         </Button>
@@ -47,11 +53,17 @@ export default function Reports() {
 
       <Group gap="md" wrap="wrap" align="flex-end">
         <AudienceFilter value={audience} onChange={setAudience} />
-        <MonthPickerInput
-          value={month}
-          onChange={(v) => v && setMonth(v)}
-          valueFormat="MMMM YYYY"
-          w={180}
+        <DatePickerInput
+          type="range"
+          label="Период"
+          placeholder="С какого — по какое"
+          value={range}
+          onChange={setRange}
+          valueFormat="DD.MM.YYYY"
+          maxDate={new Date()}
+          allowSingleDateInRange
+          w={280}
+          clearable={false}
         />
       </Group>
 

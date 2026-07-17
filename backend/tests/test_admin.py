@@ -211,6 +211,8 @@ def test_rating_sorted_by_score(client):
 
 
 def test_export_xlsx(client):
+    from datetime import timedelta
+
     uid, tok = approve_user(client, "w@mtuci.ru")
     atok = admin_token(client)
     pd = past()
@@ -220,9 +222,12 @@ def test_export_xlsx(client):
     assert "spreadsheet" in resp.headers["content-type"]
     wb = load_workbook(BytesIO(resp.content))
     ws = wb.active
+    # детализация по сессиям: заголовки + строка сессии + «Итого»
     assert ws.cell(1, 1).value == "ФИО"
-    # строка сотрудника: всего часов = 8
-    assert ws.cell(2, 4).value == 8.0
+    assert ws.cell(1, 6).value == "Длительность сессии"
+    assert ws.cell(2, 4).value == f"{pd} 09:00:00"  # начало сессии
+    assert ws.cell(2, 6).value == timedelta(hours=8)  # длительность
+    assert ws.cell(3, 1).value.startswith("Итого,")
 
 
 def test_worker_cannot_access_reports(client):
