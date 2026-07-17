@@ -25,14 +25,20 @@ export function useTimesheet(start: string, end: string) {
   })
 }
 
-function useMark(path: 'check-in' | 'check-out') {
+export function useCheckIn() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (coords: Coords) =>
-      (await api.post<Attendance>(`/attendance/${path}`, coords)).data,
+      (await api.post<Attendance>('/attendance/check-in', coords)).data,
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.root }),
   })
 }
 
-export const useCheckIn = () => useMark('check-in')
-export const useCheckOut = () => useMark('check-out')
+// уход геолокацию не проверяет — тело не отправляем
+export function useCheckOut() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async () => (await api.post<Attendance>('/attendance/check-out')).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.root }),
+  })
+}

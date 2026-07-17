@@ -17,20 +17,30 @@ export default function CheckIn() {
 
   const open = status.data ?? null
 
-  const act = async (kind: 'in' | 'out') => {
+  const arrive = async () => {
     setBusy(true)
     try {
-      const coords = await getPosition() // гео запрашивается по тапу — намерение совпадает с prompt
-      const rec =
-        kind === 'in' ? await checkIn.mutateAsync(coords) : await checkOut.mutateAsync(coords)
-      const outZone = kind === 'in' ? rec.out_of_zone_in : rec.out_of_zone_out
+      const coords = await getPosition() // гео только на приходе — запрашивается по тапу
+      const rec = await checkIn.mutateAsync(coords)
       notifications.show({
-        color: outZone ? 'yellow' : 'green',
-        title: kind === 'in' ? 'Приход отмечен' : 'Уход отмечен',
-        message: outZone
+        color: rec.out_of_zone_in ? 'yellow' : 'green',
+        title: 'Приход отмечен',
+        message: rec.out_of_zone_in
           ? 'Вы вне рабочей зоны — отметка сохранена с пометкой для администратора'
           : 'Вы в рабочей зоне',
       })
+    } catch (e) {
+      notifications.show({ color: 'red', message: errMsg(e, 'Не удалось отметиться') })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const leave = async () => {
+    setBusy(true)
+    try {
+      await checkOut.mutateAsync() // уход геолокацию не проверяет
+      notifications.show({ color: 'green', title: 'Уход отмечен', message: 'Смена закрыта' })
     } catch (e) {
       notifications.show({ color: 'red', message: errMsg(e, 'Не удалось отметиться') })
     } finally {
@@ -93,12 +103,12 @@ export default function CheckIn() {
           variant="outline"
           fullWidth
           loading={busy}
-          onClick={() => act('out')}
+          onClick={leave}
         >
           Ушёл
         </Button>
       ) : (
-        <Button size="xl" h={64} color="mtuci" fullWidth loading={busy} onClick={() => act('in')}>
+        <Button size="xl" h={64} color="mtuci" fullWidth loading={busy} onClick={arrive}>
           Пришёл
         </Button>
       )}

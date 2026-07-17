@@ -64,8 +64,16 @@ def test_double_checkin_rejected(client):
 
 def test_checkout_without_checkin(client):
     _, tok = approved_worker(client)
-    r = client.post("/api/attendance/check-out", headers=auth(tok), json=IN_ZONE)
+    r = client.post("/api/attendance/check-out", headers=auth(tok))
     assert r.status_code == 409
+
+
+def test_checkout_needs_no_geo(client):
+    _, tok = approved_worker(client)
+    client.post("/api/attendance/check-in", headers=auth(tok), json=IN_ZONE)
+    out = client.post("/api/attendance/check-out", headers=auth(tok))  # без тела/гео
+    assert out.status_code == 200
+    assert out.json()["check_out"] is not None
 
 
 def test_checkin_checkout_cycle_and_status(client):
@@ -75,7 +83,7 @@ def test_checkin_checkout_cycle_and_status(client):
     st = client.get("/api/attendance/status", headers=auth(tok))
     assert st.json() is not None and st.json()["check_out"] is None
 
-    out = client.post("/api/attendance/check-out", headers=auth(tok), json=IN_ZONE)
+    out = client.post("/api/attendance/check-out", headers=auth(tok))
     assert out.status_code == 200
     assert out.json()["check_out"] is not None
 
@@ -93,7 +101,7 @@ def test_unapproved_cannot_checkin(client):
 def test_timesheet_shape(client):
     _, tok = approved_worker(client)
     client.post("/api/attendance/check-in", headers=auth(tok), json=IN_ZONE)
-    client.post("/api/attendance/check-out", headers=auth(tok), json=IN_ZONE)
+    client.post("/api/attendance/check-out", headers=auth(tok))
     ts = client.get("/api/attendance/timesheet", headers=auth(tok))
     assert ts.status_code == 200
     body = ts.json()

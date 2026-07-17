@@ -134,7 +134,7 @@ def test_today_request_creates_open_shift_closed_by_checkout(client):
     assert st.json() is not None and st.json()["check_out"] is None
 
     # закрывается обычным check-out
-    out = client.post("/api/attendance/check-out", headers=auth(tok), json=IN_ZONE)
+    out = client.post("/api/attendance/check-out", headers=auth(tok))
     assert out.status_code == 200
     assert out.json()["check_out"] is not None
 

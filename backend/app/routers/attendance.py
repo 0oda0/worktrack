@@ -51,16 +51,13 @@ def check_in(data: GeoIn, db: Session = Depends(get_db), user: User = Depends(re
 
 
 @router.post("/check-out", response_model=AttendanceOut)
-def check_out(data: GeoIn, db: Session = Depends(get_db), user: User = Depends(require_approved)):
+def check_out(db: Session = Depends(get_db), user: User = Depends(require_approved)):
     rec = _open_record(db, user.id)
     if not rec:
         raise HTTPException(status.HTTP_409_CONFLICT, "Нет открытой смены")
 
-    office = get_office(db)
+    # уход геолокацию не проверяет — просто закрываем смену
     rec.check_out = datetime.now(timezone.utc)
-    rec.lat_out = data.lat
-    rec.lng_out = data.lng
-    rec.out_of_zone_out = is_out_of_zone(data.lat, data.lng, *office)
     db.commit()
     db.refresh(rec)
     return rec
