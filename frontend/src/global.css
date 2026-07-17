@@ -1,0 +1,24 @@
+:root {
+  --wt-bg: #f8f7fc;
+}
+
+body {
+  background: var(--wt-bg);
+  color: #151515;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Табличные цифры для таймеров/часов/рейтинга */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

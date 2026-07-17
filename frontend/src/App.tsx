@@ -1,32 +1,46 @@
-import { Badge, Center, Stack, Text, Title } from '@mantine/core'
-import { useQuery } from '@tanstack/react-query'
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 
-import { api } from './api/client'
-
-function Home() {
-  const health = useQuery({
-    queryKey: ['health'],
-    queryFn: async () => (await api.get<{ status: string }>('/health')).data,
-  })
-
-  return (
-    <Center h="100vh">
-      <Stack align="center" gap="xs">
-        <Title order={1}>WorkTrack</Title>
-        <Text c="dimmed">Учёт рабочего времени</Text>
-        <Badge color={health.data?.status === 'ok' ? 'green' : 'red'}>
-          API: {health.isLoading ? '…' : health.data?.status === 'ok' ? 'работает' : 'недоступен'}
-        </Badge>
-      </Stack>
-    </Center>
-  )
-}
+import { ProtectedRoute } from './auth/ProtectedRoute'
+import { Placeholder } from './components/Placeholder'
+import { AdminShell } from './layouts/AdminShell'
+import { WorkerShell } from './layouts/WorkerShell'
+import Login from './pages/Login'
+import PendingApproval from './pages/PendingApproval'
+import Register from './pages/Register'
 
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      {/* публичные */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/pending" element={<PendingApproval />} />
+
+      {/* работник (mobile-first) */}
+      <Route element={<ProtectedRoute allow={['worker']} />}>
+        <Route element={<WorkerShell />}>
+          <Route path="/" element={<Placeholder title="Отметка" />} />
+          <Route path="/timesheet" element={<Placeholder title="Табель" />} />
+          <Route path="/requests" element={<Placeholder title="Заявки" />} />
+        </Route>
+      </Route>
+
+      {/* админка (leader + admin) */}
+      <Route element={<ProtectedRoute allow={['admin', 'leader']} />}>
+        <Route element={<AdminShell />}>
+          <Route path="/admin" element={<Placeholder title="Дашборд" />} />
+          <Route path="/admin/records" element={<Placeholder title="Отметки" />} />
+          <Route path="/admin/requests" element={<Placeholder title="Заявки" />} />
+          <Route path="/admin/reports" element={<Placeholder title="Отчёты" />} />
+          <Route path="/admin/rating" element={<Placeholder title="Рейтинг" />} />
+          <Route path="/admin/me" element={<Placeholder title="Моя смена" />} />
+          <Route path="/admin/employees" element={<Placeholder title="Сотрудники" />} />
+          <Route path="/admin/holidays" element={<Placeholder title="Праздники" />} />
+          <Route path="/admin/settings" element={<Placeholder title="Настройки" />} />
+        </Route>
+      </Route>
+
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }
