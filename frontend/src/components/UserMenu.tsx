@@ -1,14 +1,8 @@
 import { Avatar, Badge, Group, Menu, Stack, Text, UnstyledButton } from '@mantine/core'
 import { IconChevronDown, IconLogout } from '@tabler/icons-react'
 
-import type { Role } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
-
-const ROLE_LABEL: Record<Role, string> = {
-  admin: 'Администратор',
-  leader: 'Старший состав',
-  worker: 'Работник',
-}
+import { ROLE_LABEL } from '../lib/labels'
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/)

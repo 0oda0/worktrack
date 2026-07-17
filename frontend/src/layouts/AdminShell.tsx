@@ -1,4 +1,4 @@
-import { AppShell, Burger, Group, NavLink, ScrollArea } from '@mantine/core'
+import { AppShell, Burger, Group, MantineProvider, NavLink, ScrollArea } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
 import {
   IconCalendarEvent,
@@ -38,6 +38,19 @@ const NAV: NavItem[] = [
   { to: '/admin/settings', label: 'Настройки', icon: IconSettings, roles: ['admin'] },
 ]
 
+// desktop-scale дефолты для содержимого админки (не задевают WorkerShell/AuthScreen)
+const adminComponents = {
+  Button: { defaultProps: { size: 'md' } },
+  ActionIcon: { defaultProps: { size: 'lg' } },
+  TextInput: { defaultProps: { size: 'md' } },
+  PasswordInput: { defaultProps: { size: 'md' } },
+  Select: { defaultProps: { size: 'md' } },
+  Textarea: { defaultProps: { size: 'md' } },
+  DatePickerInput: { defaultProps: { size: 'md' } },
+  MonthPickerInput: { defaultProps: { size: 'md' } },
+  TimeInput: { defaultProps: { size: 'md' } },
+} as const
+
 export function AdminShell() {
   const [opened, { toggle, close }] = useDisclosure()
   const { pathname } = useLocation()
@@ -48,21 +61,21 @@ export function AdminShell() {
 
   return (
     <AppShell
-      header={{ height: 60 }}
-      navbar={{ width: 264, breakpoint: 'md', collapsed: { mobile: !opened } }}
-      padding="lg"
+      header={{ height: 72 }}
+      navbar={{ width: 280, breakpoint: 'md', collapsed: { mobile: !opened } }}
+      padding="xl"
     >
       <AppShell.Header>
-        <Group h="100%" px="md" justify="space-between">
-          <Group gap="sm">
-            <Burger opened={opened} onClick={toggle} hiddenFrom="md" size="sm" />
-            <Logo height={28} />
+        <Group h="100%" px="xl" justify="space-between">
+          <Group gap="md">
+            <Burger opened={opened} onClick={toggle} hiddenFrom="md" size="md" />
+            <Logo height={40} />
           </Group>
           <UserMenu />
         </Group>
       </AppShell.Header>
 
-      <AppShell.Navbar p="sm">
+      <AppShell.Navbar p="md">
         <ScrollArea>
           {items.map(({ to, label, icon: Icon }) => {
             const active = pathname === to
@@ -72,12 +85,12 @@ export function AdminShell() {
                 component={Link}
                 to={to}
                 label={label}
-                leftSection={<Icon size={20} stroke={1.75} />}
+                leftSection={<Icon size={22} stroke={1.75} />}
                 active={active}
                 color="mtuci"
                 variant="light"
                 onClick={close}
-                mb={4}
+                mb={6}
                 style={{ borderRadius: 'var(--mantine-radius-md)' }}
               />
             )
@@ -86,7 +99,11 @@ export function AdminShell() {
       </AppShell.Navbar>
 
       <AppShell.Main>
-        <Outlet />
+        <MantineProvider theme={{ components: adminComponents }} withCssVariables={false}>
+          <div style={{ maxWidth: 1440, margin: '0 auto' }}>
+            <Outlet />
+          </div>
+        </MantineProvider>
       </AppShell.Main>
     </AppShell>
   )

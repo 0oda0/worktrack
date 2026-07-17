@@ -72,3 +72,75 @@ export interface CreateRequestInput {
   check_out?: string | null
   comment?: string
 }
+
+export interface AdminRecord {
+  id: number
+  user_id: number
+  full_name: string
+  audience: Audience | null
+  work_date: string
+  check_in: string
+  check_out: string | null
+  lat_in: number | null
+  lng_in: number | null
+  lat_out: number | null
+  lng_out: number | null
+  out_of_zone_in: boolean
+  out_of_zone_out: boolean
+  is_manual: boolean
+  comment: string
+}
+
+export interface NowWorking {
+  user_id: number
+  full_name: string
+  audience: Audience | null
+  check_in: string
+  out_of_zone_in: boolean
+}
+
+export interface SummaryRow extends Stats {
+  user_id: number
+  full_name: string
+  audience: Audience | null
+  hire_date: string | null
+}
+
+export interface RatingRow {
+  user_id: number
+  full_name: string
+  audience: Audience | null
+  total_hours: number
+  overtime: number
+  weekend_hours: number
+  lateness: number
+  score: number
+}
+
+export interface RecordFilters {
+  user_id?: number
+  audience?: Audience
+  start?: string
+  end?: string
+}
+
+export interface UpdateRecordInput {
+  check_in?: string
+  check_out?: string | null
+  comment?: string
+}
+
+export interface ApproveUserInput {
+  role: Role
+  audience?: Audience | null
+  hire_date: string
+}
+
+export interface UpdateUserInput {
+  full_name?: string
+  role?: Role
+  audience?: Audience | null
+  hire_date?: string
+  is_approved?: boolean
+  is_active?: boolean
+}
