@@ -1,5 +1,5 @@
-import { AppShell, Burger, Group, MantineProvider, NavLink, ScrollArea } from '@mantine/core'
-import { useDisclosure } from '@mantine/hooks'
+import { AppShell, Burger, Group, MantineProvider, NavLink, ScrollArea, Tooltip } from '@mantine/core'
+import { useDisclosure, useLocalStorage } from '@mantine/hooks'
 import {
   IconCalendarEvent,
   IconChartBar,
@@ -52,7 +52,13 @@ const adminComponents = {
 } as const
 
 export function AdminShell() {
-  const [opened, { toggle, close }] = useDisclosure()
+  // моб. оверлей и десктоп-сворачивание — независимы; выбор на десктопе запоминаем
+  const [mobileOpened, { toggle: toggleMobile, close: closeMobile }] = useDisclosure()
+  const [desktopExpanded, setDesktopExpanded] = useLocalStorage({
+    key: 'worktrack-nav-expanded',
+    defaultValue: true,
+    getInitialValueInEffect: false, // читаем сразу — без мигания при загрузке
+  })
   const { pathname } = useLocation()
   const { user } = useAuth()
   const role = user?.role
@@ -62,13 +68,41 @@ export function AdminShell() {
   return (
     <AppShell
       header={{ height: 80 }}
-      navbar={{ width: 280, breakpoint: 'md', collapsed: { mobile: !opened } }}
+      navbar={{
+        width: 280,
+        breakpoint: 'md',
+        collapsed: { mobile: !mobileOpened, desktop: !desktopExpanded },
+      }}
       padding="xl"
+      transitionDuration={200}
+      transitionTimingFunction="cubic-bezier(0.32, 0.72, 0, 1)"
     >
       <AppShell.Header>
         <Group h="100%" px="xl" justify="space-between">
           <Group gap="md">
-            <Burger opened={opened} onClick={toggle} hiddenFrom="md" size="md" />
+            {/* мобильный: открывает/закрывает выезжающее меню */}
+            <Burger
+              opened={mobileOpened}
+              onClick={toggleMobile}
+              hiddenFrom="md"
+              size="md"
+              aria-label={mobileOpened ? 'Закрыть меню' : 'Открыть меню'}
+            />
+            {/* десктоп: сворачивает/разворачивает боковое меню */}
+            <Tooltip
+              label={desktopExpanded ? 'Свернуть меню' : 'Развернуть меню'}
+              openDelay={400}
+              position="right"
+              withArrow
+            >
+              <Burger
+                opened={desktopExpanded}
+                onClick={() => setDesktopExpanded((v) => !v)}
+                visibleFrom="md"
+                size="md"
+                aria-label={desktopExpanded ? 'Свернуть меню' : 'Развернуть меню'}
+              />
+            </Tooltip>
             <Logo height={44} />
           </Group>
           <UserMenu />
@@ -89,7 +123,7 @@ export function AdminShell() {
                 active={active}
                 color="mtuci"
                 variant="light"
-                onClick={close}
+                onClick={closeMobile}
                 mb={6}
                 style={{ borderRadius: 'var(--mantine-radius-md)' }}
               />
