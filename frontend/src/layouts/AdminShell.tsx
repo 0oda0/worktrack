@@ -61,7 +61,7 @@ export function AdminShell() {
 
   return (
     <AppShell
-      header={{ height: 72 }}
+      header={{ height: 80 }}
       navbar={{ width: 280, breakpoint: 'md', collapsed: { mobile: !opened } }}
       padding="xl"
     >
@@ -69,7 +69,7 @@ export function AdminShell() {
         <Group h="100%" px="xl" justify="space-between">
           <Group gap="md">
             <Burger opened={opened} onClick={toggle} hiddenFrom="md" size="md" />
-            <Logo height={40} />
+            <Logo height={44} />
           </Group>
           <UserMenu />
         </Group>

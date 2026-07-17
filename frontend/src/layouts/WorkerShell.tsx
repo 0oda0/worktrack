@@ -22,10 +22,10 @@ export function WorkerShell() {
   const { pathname } = useLocation()
 
   return (
-    <AppShell header={{ height: 56 }} footer={{ height: 68 }} padding="md">
+    <AppShell header={{ height: 60 }} footer={{ height: 68 }} padding="md">
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
-          <Logo height={26} />
+          <Logo height={30} />
           <UserMenu />
         </Group>
       </AppShell.Header>
