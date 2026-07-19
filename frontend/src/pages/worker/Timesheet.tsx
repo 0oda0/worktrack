@@ -78,8 +78,11 @@ export default function Timesheet() {
                   <Card key={date} p="sm">
                     <Group justify="space-between" mb={6} wrap="nowrap">
                       <Group gap="xs" wrap="nowrap">
-                        <Text fw={600} tt="capitalize">
-                          {dayjs(date).format('dd, D MMM')}
+                        <Text fw={600}>
+                          {(() => {
+                            const s = dayjs(date).format('dd, D MMMM')
+                            return s.charAt(0).toUpperCase() + s.slice(1)
+                          })()}
                         </Text>
                         {isWeekend && (
                           <Badge variant="light" color="mtuci">
@@ -99,6 +102,12 @@ export default function Timesheet() {
                           <Text size="sm" c="dimmed" className="tnum">
                             {dayjs(d.check_in).format('HH:mm')} —{' '}
                             {d.check_out ? dayjs(d.check_out).format('HH:mm') : '…'}
+                            {d.check_out && !dayjs(d.check_out).isSame(dayjs(d.check_in), 'day') && (
+                              <Text component="sup" size="xs" title="Уход на следующий день">
+                                {' '}
+                                +1
+                              </Text>
+                            )}
                           </Text>
                           <Group gap="xs" wrap="wrap" justify="flex-end">
                             {d.is_manual && (

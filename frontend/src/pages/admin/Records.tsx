@@ -3,6 +3,7 @@ import {
   Anchor,
   Badge,
   Button,
+  Checkbox,
   Group,
   Modal,
   Skeleton,
@@ -35,6 +36,11 @@ function recordHours(r: AdminRecord): number | null {
   return Math.round(((new Date(r.check_out).getTime() - new Date(r.check_in).getTime()) / 3600000) * 100) / 100
 }
 
+/** Уход пришёлся на следующий календарный день (ночная смена). */
+function isOvernight(r: AdminRecord): boolean {
+  return !!r.check_out && !dayjs(r.check_out).isSame(dayjs(r.check_in), 'day')
+}
+
 export default function Records() {
   const [audience, setAudience] = useState<AudienceValue>('all')
   const [month, setMonth] = useState<string>(dayjs().format('YYYY-MM-DD'))
@@ -57,7 +63,9 @@ export default function Records() {
 
   const [editing, setEditing] = useState<AdminRecord | null>(null)
   const [opened, { open, close }] = useDisclosure(false)
-  const form = useForm({ initialValues: { check_in: '', check_out: '', comment: '' } })
+  const form = useForm({
+    initialValues: { check_in: '', check_out: '', next_day: false, comment: '' },
+  })
 
   const rows = useMemo(() => {
     let data = records.data ?? []
@@ -79,6 +87,7 @@ export default function Records() {
     form.setValues({
       check_in: dayjs(r.check_in).format('HH:mm'),
       check_out: r.check_out ? dayjs(r.check_out).format('HH:mm') : '',
+      next_day: isOvernight(r),
       comment: r.comment ?? '',
     })
     open()
@@ -86,12 +95,15 @@ export default function Records() {
 
   const saveEdit = form.onSubmit(async (vals) => {
     if (!editing) return
+    const outDate = vals.next_day
+      ? dayjs(editing.work_date).add(1, 'day').format('YYYY-MM-DD')
+      : editing.work_date
     try {
       await updateRec.mutateAsync({
         id: editing.id,
         data: {
           check_in: `${editing.work_date}T${vals.check_in}:00`,
-          check_out: vals.check_out ? `${editing.work_date}T${vals.check_out}:00` : null,
+          check_out: vals.check_out ? `${outDate}T${vals.check_out}:00` : null,
           comment: vals.comment,
         },
       })
@@ -182,7 +194,19 @@ export default function Records() {
                     <Table.Td>{r.audience ?? '—'}</Table.Td>
                     <Table.Td className="tnum">{dayjs(r.check_in).format('HH:mm')}</Table.Td>
                     <Table.Td className="tnum">
-                      {r.check_out ? dayjs(r.check_out).format('HH:mm') : '—'}
+                      {r.check_out ? (
+                        <>
+                          {dayjs(r.check_out).format('HH:mm')}
+                          {isOvernight(r) && (
+                            <Text component="sup" size="xs" c="dimmed" title="Уход на следующий день">
+                              {' '}
+                              +1
+                            </Text>
+                          )}
+                        </>
+                      ) : (
+                        '—'
+                      )}
                     </Table.Td>
                     <Table.Td className="tnum">{hours ?? '—'}</Table.Td>
                     <Table.Td>
@@ -253,6 +277,11 @@ export default function Records() {
                 label="Уход"
                 description="Пусто — смена останется открытой"
                 {...form.getInputProps('check_out')}
+              />
+              <Checkbox
+                label="Уход на следующий день (ночная смена)"
+                disabled={!form.values.check_out}
+                {...form.getInputProps('next_day', { type: 'checkbox' })}
               />
               <Textarea label="Комментарий" autosize minRows={2} {...form.getInputProps('comment')} />
               <Group justify="flex-end">
