@@ -79,7 +79,7 @@ export default function RequestsReview() {
                     variant="light"
                     color="green"
                     leftSection={<IconCheck size={16} />}
-                    loading={approve.isPending}
+                    loading={approve.isPending && approve.variables?.id === r.id}
                     onClick={() => onApprove(r)}
                   >
                     Одобрить

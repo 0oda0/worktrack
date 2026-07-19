@@ -51,12 +51,19 @@ export default function Login() {
             label="Email"
             placeholder="you@mtuci.ru"
             withAsterisk
+            type="email"
+            name="email"
+            autoComplete="email"
+            inputMode="email"
+            spellCheck={false}
             {...form.getInputProps('email')}
           />
           <PasswordInput
             label="Пароль"
             placeholder="Ваш пароль"
             withAsterisk
+            name="password"
+            autoComplete="current-password"
             {...form.getInputProps('password')}
           />
           <Button type="submit" size="md" fullWidth loading={loading}>

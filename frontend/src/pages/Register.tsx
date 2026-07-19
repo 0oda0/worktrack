@@ -52,18 +52,27 @@ export default function Register() {
             label="ФИО"
             placeholder="Иванов Иван Иванович"
             withAsterisk
+            name="name"
+            autoComplete="name"
             {...form.getInputProps('full_name')}
           />
           <TextInput
             label="Email"
             placeholder="you@mtuci.ru"
             withAsterisk
+            type="email"
+            name="email"
+            autoComplete="email"
+            inputMode="email"
+            spellCheck={false}
             {...form.getInputProps('email')}
           />
           <PasswordInput
             label="Пароль"
             placeholder="Минимум 6 символов"
             withAsterisk
+            name="new-password"
+            autoComplete="new-password"
             {...form.getInputProps('password')}
           />
           <Button type="submit" size="md" fullWidth loading={loading}>

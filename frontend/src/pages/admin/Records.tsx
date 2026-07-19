@@ -75,7 +75,7 @@ export default function Records() {
     return [...data].sort((a, b) => {
       const av = a[sort.field] ?? ''
       const bv = b[sort.field] ?? ''
-      return av > bv ? dir : av < bv ? -dir : 0
+      return dir * String(av).localeCompare(String(bv), 'ru')
     })
   }, [records.data, search, sort])
 
@@ -135,7 +135,19 @@ export default function Records() {
     })
 
   const th = (label: string, field: SortField) => (
-    <Table.Th style={{ cursor: 'pointer' }} onClick={() => toggleSort(field)}>
+    <Table.Th
+      style={{ cursor: 'pointer' }}
+      tabIndex={0}
+      role="button"
+      aria-sort={sort.field === field ? (sort.dir === 'asc' ? 'ascending' : 'descending') : undefined}
+      onClick={() => toggleSort(field)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          toggleSort(field)
+        }
+      }}
+    >
       {label}
       {sort.field === field ? (sort.dir === 'asc' ? ' ↑' : ' ↓') : ''}
     </Table.Th>
@@ -178,7 +190,7 @@ export default function Records() {
                 {th('Ауд.', 'audience')}
                 <Table.Th>Приход</Table.Th>
                 <Table.Th>Уход</Table.Th>
-                <Table.Th>Часы</Table.Th>
+                <Table.Th ta="right">Часы</Table.Th>
                 <Table.Th>Метки</Table.Th>
                 <Table.Th>Гео</Table.Th>
                 <Table.Th />
@@ -208,7 +220,7 @@ export default function Records() {
                         '—'
                       )}
                     </Table.Td>
-                    <Table.Td className="tnum">{hours ?? '—'}</Table.Td>
+                    <Table.Td ta="right" className="tnum">{hours ?? '—'}</Table.Td>
                     <Table.Td>
                       <Group gap={4}>
                         {r.is_manual && (

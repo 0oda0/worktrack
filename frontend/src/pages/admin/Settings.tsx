@@ -117,9 +117,21 @@ export default function Settings() {
                 Рабочая зона:
               </Text>
               {office_polygon ? (
-                <Badge color="mtuci" variant="light">
-                  полигон, {office_polygon.length} точек
-                </Badge>
+                <>
+                  <Badge color="mtuci" variant="light">
+                    полигон, {office_polygon.length} точек
+                  </Badge>
+                  <Anchor
+                    href={`https://geojson.io/#data=data:application/json,${encodeURIComponent(
+                      JSON.stringify({ type: 'Polygon', coordinates: [office_polygon] }),
+                    )}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    size="sm"
+                  >
+                    посмотреть на карте
+                  </Anchor>
+                </>
               ) : (
                 <Badge color="gray" variant="light">
                   круг (точка + радиус)

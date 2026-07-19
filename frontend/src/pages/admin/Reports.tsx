@@ -81,11 +81,11 @@ export default function Reports() {
                 <Table.Th>ФИО</Table.Th>
                 <Table.Th>Ауд.</Table.Th>
                 <Table.Th>Трудоустройство</Table.Th>
-                <Table.Th>Всего</Table.Th>
-                <Table.Th>Норма 9ч</Table.Th>
-                <Table.Th>Оплач. 8ч</Table.Th>
-                <Table.Th>Переработка</Table.Th>
-                <Table.Th>Выходные</Table.Th>
+                <Table.Th ta="right">Всего</Table.Th>
+                <Table.Th ta="right">Норма 9ч</Table.Th>
+                <Table.Th ta="right">Оплач. 8ч</Table.Th>
+                <Table.Th ta="right">Переработка</Table.Th>
+                <Table.Th ta="right">Выходные</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -94,11 +94,11 @@ export default function Reports() {
                   <Table.Td>{r.full_name}</Table.Td>
                   <Table.Td>{r.audience ?? '—'}</Table.Td>
                   <Table.Td>{r.hire_date ? dayjs(r.hire_date).format('DD.MM.YYYY') : '—'}</Table.Td>
-                  <Table.Td className="tnum">{r.total_hours}</Table.Td>
-                  <Table.Td className="tnum">{r.work_hours}</Table.Td>
-                  <Table.Td className="tnum">{r.paid_hours}</Table.Td>
-                  <Table.Td className="tnum">{r.overtime}</Table.Td>
-                  <Table.Td className="tnum">{r.weekend_hours}</Table.Td>
+                  <Table.Td ta="right" className="tnum">{r.total_hours}</Table.Td>
+                  <Table.Td ta="right" className="tnum">{r.work_hours}</Table.Td>
+                  <Table.Td ta="right" className="tnum">{r.paid_hours}</Table.Td>
+                  <Table.Td ta="right" className="tnum">{r.overtime}</Table.Td>
+                  <Table.Td ta="right" className="tnum">{r.weekend_hours}</Table.Td>
                 </Table.Tr>
               ))}
             </Table.Tbody>

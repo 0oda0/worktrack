@@ -21,11 +21,16 @@ export default function Dashboard() {
 
   const monthHours = summary.data?.reduce((s, r) => s + r.total_hours, 0) ?? 0
 
+  // «Петров П.» вместо первого слова ФИО — иначе тёзки на графике неразличимы
+  const shortName = (full: string) => {
+    const [a, b] = full.trim().split(/\s+/)
+    return b ? `${a} ${b[0]}.` : a
+  }
   const chartData = (summary.data ?? [])
     .filter((r) => r.total_hours > 0)
     .sort((a, b) => b.total_hours - a.total_hours)
     .slice(0, 8)
-    .map((r) => ({ name: r.full_name.split(' ')[0], hours: r.total_hours }))
+    .map((r) => ({ name: shortName(r.full_name), hours: r.total_hours }))
 
   return (
     <Stack gap="lg">

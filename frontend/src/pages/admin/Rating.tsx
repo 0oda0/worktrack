@@ -44,11 +44,11 @@ export default function Rating() {
                 <Table.Th w={64}>#</Table.Th>
                 <Table.Th>ФИО</Table.Th>
                 <Table.Th>Ауд.</Table.Th>
-                <Table.Th>Часы</Table.Th>
-                <Table.Th>Переработка</Table.Th>
-                <Table.Th>Выходные</Table.Th>
-                <Table.Th>Опоздания</Table.Th>
-                <Table.Th>Балл</Table.Th>
+                <Table.Th ta="right">Часы</Table.Th>
+                <Table.Th ta="right">Переработка</Table.Th>
+                <Table.Th ta="right">Выходные</Table.Th>
+                <Table.Th ta="right">Опоздания</Table.Th>
+                <Table.Th ta="right">Балл</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -63,11 +63,11 @@ export default function Rating() {
                     </Table.Td>
                     <Table.Td fw={top ? 700 : 500}>{r.full_name}</Table.Td>
                     <Table.Td>{r.audience ?? '—'}</Table.Td>
-                    <Table.Td className="tnum">{r.total_hours}</Table.Td>
-                    <Table.Td className="tnum">{r.overtime}</Table.Td>
-                    <Table.Td className="tnum">{r.weekend_hours}</Table.Td>
-                    <Table.Td className="tnum">{r.lateness}</Table.Td>
-                    <Table.Td>
+                    <Table.Td ta="right" className="tnum">{r.total_hours}</Table.Td>
+                    <Table.Td ta="right" className="tnum">{r.overtime}</Table.Td>
+                    <Table.Td ta="right" className="tnum">{r.weekend_hours}</Table.Td>
+                    <Table.Td ta="right" className="tnum">{r.lateness}</Table.Td>
+                    <Table.Td ta="right">
                       <Text fw={700} c="mtuci.7" className="tnum">
                         {r.score}
                       </Text>
