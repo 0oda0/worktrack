@@ -86,7 +86,7 @@ def build_timesheet(db: Session, target: User, start: date, end: date) -> Timesh
     holidays = {h.date for h in db.scalars(select(Holiday)).all()}
 
     tuples = [(r.work_date, r.check_in, r.check_out) for r in records]
-    stats = compute_stats(tuples, holidays, target.hire_date, start, end)
+    stats = compute_stats(tuples, holidays, target.hire_date, start, end, norm_end=local_today())
 
     days = []
     for r in records:

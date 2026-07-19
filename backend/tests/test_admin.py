@@ -251,3 +251,21 @@ def test_get_and_update_settings_affects_zone(client):
     _, tok = approve_user(client, "w@mtuci.ru")
     r = client.post("/api/attendance/check-in", headers=auth(tok), json=IN_ZONE)
     assert r.json()["out_of_zone_in"] is True
+
+
+def test_now_working_skips_stale_open_shift(client, db_session):
+    """Незакрытая смена за прошлый день не должна числиться «сейчас на работе»."""
+    from datetime import timedelta as td
+    from app.models import AttendanceRecord
+
+    _, tok = approve_user(client, "stale@mtuci.ru")
+    atok = admin_token(client)
+    client.post("/api/attendance/check-in", headers=auth(tok), json=IN_ZONE)
+
+    rec = db_session.query(AttendanceRecord).one()
+    rec.work_date = rec.work_date - td(days=1)
+    rec.check_in = rec.check_in - td(days=1)
+    db_session.commit()
+
+    nw = client.get("/api/admin/now-working", headers=auth(atok)).json()
+    assert nw == []

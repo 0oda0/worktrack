@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import ROLE_WORKER, AttendanceRecord, Holiday, User
-from app.services.settings_store import TZ
+from app.services.settings_store import TZ, local_today
 from app.services.timesheet import compute_stats, is_weekend_or_holiday
 
 WORK_START_HOUR = 9  # позже — опоздание
@@ -42,6 +42,7 @@ def summary(db: Session, users: list[User], start: date, end: date) -> list[dict
             u.hire_date,
             start,
             end,
+            norm_end=local_today(),
         )
         rows.append(
             {
@@ -61,7 +62,8 @@ def rating(db: Session, users: list[User], start: date, end: date) -> list[dict]
     for u in users:
         recs = _records_for(db, u.id, start, end)
         stats = compute_stats(
-            [(r.work_date, r.check_in, r.check_out) for r in recs], holidays, u.hire_date, start, end
+            [(r.work_date, r.check_in, r.check_out) for r in recs], holidays, u.hire_date,
+            start, end, norm_end=local_today(),
         )
         lateness = 0
         for r in recs:

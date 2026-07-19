@@ -221,6 +221,11 @@ export default function Records() {
                             вне зоны
                           </Badge>
                         )}
+                        {!r.check_out && dayjs(r.work_date).isBefore(dayjs(), 'day') && (
+                          <Badge size="sm" variant="light" color="red">
+                            не закрыта
+                          </Badge>
+                        )}
                       </Group>
                     </Table.Td>
                     <Table.Td>

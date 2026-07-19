@@ -24,7 +24,7 @@ from app.schemas import (
     UserOut,
     UserUpdateIn,
 )
-from app.services.settings_store import get_office, to_utc
+from app.services.settings_store import get_office, local_today, to_utc
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -188,7 +188,8 @@ def now_working(
     q = (
         select(AttendanceRecord, User)
         .join(User, AttendanceRecord.user_id == User.id)
-        .where(AttendanceRecord.check_out.is_(None))
+        # зависшие незакрытые смены за прошлые дни «на работе» не числятся
+        .where(AttendanceRecord.check_out.is_(None), AttendanceRecord.work_date == local_today())
     )
     if audience:
         q = q.where(User.audience == audience)

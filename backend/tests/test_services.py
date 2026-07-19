@@ -92,3 +92,18 @@ def test_norm_over_full_week():
     s = compute_stats([], set(), None, date(2026, 6, 1), date(2026, 6, 7))
     assert s.work_hours == 45  # 5 × 9
     assert s.paid_hours == 40  # 5 × 8
+
+
+def test_norm_capped_by_norm_end():
+    # период — весь июнь-2026, но norm_end = 5 июня (пт) → норма за 5 будней, не за месяц
+    s = compute_stats([], set(), None, date(2026, 6, 1), date(2026, 6, 30),
+                      norm_end=date(2026, 6, 5))
+    assert s.work_hours == 5 * 9
+    assert s.paid_hours == 5 * 8
+
+
+def test_norm_end_after_period_changes_nothing():
+    s_plain = compute_stats([], set(), None, date(2026, 6, 1), date(2026, 6, 30))
+    s_capped = compute_stats([], set(), None, date(2026, 6, 1), date(2026, 6, 30),
+                             norm_end=date(2026, 7, 15))
+    assert s_plain == s_capped

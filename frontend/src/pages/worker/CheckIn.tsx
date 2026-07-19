@@ -83,6 +83,12 @@ export default function CheckIn() {
                 Смена идёт с {dayjs(open.check_in).format('HH:mm')}
               </Text>
               <ShiftTimer since={open.check_in} />
+              {!dayjs(open.check_in).isSame(dayjs(), 'day') && (
+                <Text size="sm" c="yellow.8" ta="center">
+                  Смена открыта с {dayjs(open.check_in).format('D MMMM')} — похоже, вы забыли
+                  отметить уход. Нажмите «Ушёл» или отправьте заявку на исправление.
+                </Text>
+              )}
             </Stack>
           ) : (
             <Stack align="center" gap="xs" py="md">

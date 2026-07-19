@@ -46,9 +46,13 @@ def compute_stats(
     hire_date: date | None,
     start: date,
     end: date,
+    norm_end: date | None = None,
 ) -> Stats:
     effective_start = max(start, hire_date) if hire_date else start
-    working_days = count_working_days(effective_start, end, holidays)
+    # норма не считается на будущее: если период ещё не кончился (norm_end=сегодня),
+    # рабочие дни берём только до norm_end
+    effective_end = min(end, norm_end) if norm_end else end
+    working_days = count_working_days(effective_start, effective_end, holidays)
 
     total = weekend = overtime = 0.0
     for work_date, check_in, check_out in records:
