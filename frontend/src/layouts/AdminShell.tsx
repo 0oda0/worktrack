@@ -32,7 +32,7 @@ const NAV: NavItem[] = [
   { to: '/admin/requests', label: 'Заявки', icon: IconFileDescription },
   { to: '/admin/reports', label: 'Отчёты', icon: IconChartBar },
   { to: '/admin/rating', label: 'Рейтинг', icon: IconTrophy },
-  { to: '/admin/me', label: 'Моя смена', icon: IconClockCheck, roles: ['leader'] },
+  { to: '/admin/me', label: 'Моя смена', icon: IconClockCheck },
   { to: '/admin/employees', label: 'Сотрудники', icon: IconUsers, roles: ['admin'] },
   { to: '/admin/holidays', label: 'Праздники', icon: IconCalendarEvent, roles: ['admin'] },
   { to: '/admin/settings', label: 'Настройки', icon: IconSettings, roles: ['admin'] },
