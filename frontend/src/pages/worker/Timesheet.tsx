@@ -54,7 +54,10 @@ export default function Timesheet() {
         </EmptyState>
       ) : !ts.data ? null : (
         <>
-          <SimpleGrid cols={{ base: 2, sm: 3, lg: 5 }} spacing="md">
+          {/* колонки по ширине КОНТЕЙНЕРА, а не окна: у работника колонка 520px,
+              у руководителя в «Моей смене» — широкая. Иначе карточки схлопываются
+              до ~90px и крупные числа обрезаются. */}
+          <SimpleGrid type="container" cols={{ base: 2, '600px': 3, '900px': 5 }} spacing="md">
             <StatCard label="Всего часов" value={ts.data.stats.total_hours} />
             <StatCard label="Норма (9ч)" value={ts.data.stats.work_hours} />
             <StatCard label="Оплачиваемые (8ч)" value={ts.data.stats.paid_hours} />
