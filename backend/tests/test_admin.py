@@ -41,7 +41,12 @@ def approve_user(client, email, role="worker", audience="203", hire="2026-01-01"
 
 
 def past(days=3):
-    return (date.today() - timedelta(days=days)).isoformat()
+    """Прошедший рабочий день: опоздания и переработки в выходные не считаются,
+    поэтому дата не должна «уезжать» на субботу в зависимости от дня запуска."""
+    d = date.today() - timedelta(days=days)
+    while d.weekday() >= 5:
+        d -= timedelta(days=1)
+    return d.isoformat()
 
 
 def manual_record(client, tok, atok, pd, ci="09:00:00", co="17:00:00"):

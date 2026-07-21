@@ -38,7 +38,10 @@ def approve_user(client, email, role="worker", audience="203"):
 
 
 def past_date():
+    """Прошедший рабочий день — чтобы тесты не зависели от дня недели запуска."""
     d = date.today() - timedelta(days=3)
+    while d.weekday() >= 5:
+        d -= timedelta(days=1)
     return d.isoformat()
 
 
