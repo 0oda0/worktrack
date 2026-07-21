@@ -1,0 +1,70 @@
+name: Deploy
+
+# Пуш в main → прод. Деплой запускается только после зелёного CI.
+# Пока сервер не заведён, секрет DEPLOY_HOST пуст — workflow отработает
+# и честно скажет, что деплоить некуда (красных прогонов не будет).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # можно задеплоить вручную из вкладки Actions
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false # два деплоя разом на один сервер — плохая идея
+
+jobs:
+  test:
+    name: Тесты перед деплоем
+    uses: ./.github/workflows/ci.yml
+
+  deploy:
+    name: Деплой на сервер
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Проверить, настроен ли сервер
+        id: check
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          if [ -z "$DEPLOY_HOST" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Деплой пропущен::Секрет DEPLOY_HOST не задан — сервер ещё не подключён. Инструкция: docs/deployment.md"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Настроить SSH-ключ
+        if: steps.check.outputs.configured == 'true'
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          if [ -n "$KNOWN_HOSTS" ]; then
+            printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -p "$DEPLOY_PORT" -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          fi
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Выкатить и перезапустить
+        if: steps.check.outputs.configured == 'true'
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || '/opt/worktrack' }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "$DEPLOY_PORT" \
+            "$DEPLOY_USER@$DEPLOY_HOST" \
+            "cd '$DEPLOY_PATH' && ./deploy/deploy.sh"
+
+      - name: Итог
+        if: always() && steps.check.outputs.configured == 'true'
+        run: echo "Задеплоен коммит ${{ github.sha }}"

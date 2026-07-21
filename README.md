@@ -95,6 +95,39 @@ npm run lint     # oxlint
 npm run build    # tsc -b && vite build — проверка типов и сборки
 ```
 
+## Ветки и деплой
+
+| Ветка | Роль |
+|---|---|
+| `main` | Продакшн — пуш сюда автоматически выкатывается на сервер |
+| `dev` | Рабочая ветка, сюда сливается вся разработка |
+| `feature/*`, `fix/*` | Ветки под задачу, отпочковываются от `dev` |
+
+```bash
+git checkout dev && git pull
+git checkout -b feature/название     # работаем
+git push -u origin feature/название  # PR в dev — CI прогоняет тесты
+
+# релиз
+git checkout main && git merge --ff-only dev && git push origin main
+```
+
+Автоматика (GitHub Actions):
+
+- **CI** (`.github/workflows/ci.yml`) — на каждый пуш в `dev`/`main` и на PR:
+  pytest бэкенда с реальным Postgres, линт и сборка фронтенда.
+- **Deploy** (`.github/workflows/deploy.yml`) — на пуш в `main`: сначала те же
+  тесты, потом подключение по SSH к серверу и запуск `deploy/deploy.sh`
+  (git pull → `docker compose up -d --build` → проверка `/api/health`).
+
+Пока сервер не подключён (секрет `DEPLOY_HOST` пуст), деплой корректно
+пропускается и пишет об этом в лог. Настройка сервера, секретов и HTTPS —
+[docs/deployment.md](docs/deployment.md).
+
+> ⚠️ Геолокация в браузерах работает только по HTTPS (кроме `localhost`),
+> поэтому на проде обязателен сертификат — иначе отметка прихода не получит
+> координаты.
+
 ## Переменные окружения
 
 Заполняются в `.env` (см. `.env.example`):
@@ -131,7 +164,9 @@ worktrack/
 │       ├── layouts/       # WorkerShell (мобильный), AdminShell (десктоп)
 │       ├── api/           # запросы к бэкенду (axios + TanStack Query)
 │       └── components/
-├── docs/                  # брендбук МТУСИ, план бэкенда, описание процесса
+├── deploy/deploy.sh       # выкатка на сервере (вызывается из CI по SSH)
+├── .github/workflows/     # CI (тесты) и Deploy (пуш в main → сервер)
+├── docs/                  # брендбук МТУСИ, деплой, план бэкенда, процесс
 └── docker-compose.yml
 ```
 
